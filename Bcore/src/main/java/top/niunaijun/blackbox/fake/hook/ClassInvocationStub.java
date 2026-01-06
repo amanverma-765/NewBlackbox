@@ -50,10 +50,19 @@ public abstract class ClassInvocationStub implements InvocationHandler, IInjectH
     @Override
     public void injectHook() {
         mBase = getWho();
-        mProxyInvocation = Proxy.newProxyInstance(mBase.getClass().getClassLoader(), MethodParameterUtils.getAllInterface(mBase.getClass()), this);
-        if (!onlyProxy) {
-            inject(mBase, mProxyInvocation);
+
+        // Handle null for static/class method hooks that don't need a proxy object
+        if (mBase != null) {
+            mProxyInvocation = Proxy.newProxyInstance(
+                mBase.getClass().getClassLoader(),
+                MethodParameterUtils.getAllInterface(mBase.getClass()),
+                this
+            );
+            if (!onlyProxy) {
+                inject(mBase, mProxyInvocation);
+            }
         }
+        // When mBase is null, skip proxy creation - hooks are still registered below
 
         onBindMethod();
         Class<?>[] declaredClasses = this.getClass().getDeclaredClasses();
