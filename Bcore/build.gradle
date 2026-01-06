@@ -5,7 +5,6 @@ android {
 
     compileSdk rootProject.ext.compileSdkVersion
 
-
     aidlPackagedList "android/app/IServiceConnection.aidl"
     aidlPackagedList "android/accounts/IAccountManagerResponse.aidl"
     buildFeatures {
@@ -99,6 +98,8 @@ dependencies {
     implementation 'com.github.tiann:FreeReflection:3.2.2'
     implementation "com.github.CodingGay.BlackReflection:core:$rootProject.ext.blackReflection"
 
+    // LSPosed Hidden API Bypass for Android 10+ (including Android 16)
+    implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:6.1'
 
     // Pine dependency removed
 }
