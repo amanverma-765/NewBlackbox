@@ -13,6 +13,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- Permission for task management (required for moveTaskToFront) -->
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+
     <!-- Additional permissions for better location spoofing -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -539,6 +542,12 @@
             android:name=".app.LauncherActivity"
             android:excludeFromRecents="true"
             android:theme="@style/LauncherTheme" />
+
+        <activity
+            android:name=".proxy.VpnPermissionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <service
             android:name="top.niunaijun.blackbox.proxy.ProxyVpnService"

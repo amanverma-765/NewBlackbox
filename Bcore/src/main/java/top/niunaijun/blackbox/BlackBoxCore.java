@@ -33,6 +33,7 @@ import java.util.Map;
 import black.android.app.BRActivityThread;
 import black.android.os.BRUserHandle;
 import me.weishu.reflection.Reflection;
+import org.lsposed.hiddenapibypass.HiddenApiBypass;
 import top.niunaijun.blackbox.app.BActivityThread;
 import top.niunaijun.blackbox.app.LauncherActivity;
 import top.niunaijun.blackbox.app.configuration.AppLifecycleCallback;
@@ -1543,9 +1544,38 @@ public class BlackBoxCore extends ClientConfiguration {
             throw new IllegalArgumentException("ClientConfiguration is null!");
         }
 
-        if(!NativeCore.disableHiddenApi()){
+        // Multi-strategy Hidden API bypass for Android 10+ (including Android 16)
+        boolean hiddenApiDisabled = false;
+
+        // Strategy 1: Native approach (may work on older versions)
+        if (Build.VERSION.SDK_INT >= 29) {
+            try {
+                hiddenApiDisabled = NativeCore.disableHiddenApi();
+                if (hiddenApiDisabled) {
+                    Slog.d(TAG, "Hidden API disabled via native method");
+                }
+            } catch (Throwable t) {
+                Slog.w(TAG, "Native hidden API bypass failed: " + t.getMessage());
+            }
+        }
+
+        // Strategy 2: LSPosed HiddenApiBypass (works on Android 16)
+        if (!hiddenApiDisabled && Build.VERSION.SDK_INT >= 29) {
+            try {
+                hiddenApiDisabled = HiddenApiBypass.setHiddenApiExemptions("L");
+                if (hiddenApiDisabled) {
+                    Slog.d(TAG, "Hidden API disabled via LSPosed HiddenApiBypass");
+                }
+            } catch (Throwable t) {
+                Slog.w(TAG, "LSPosed HiddenApiBypass failed: " + t.getMessage());
+            }
+        }
+
+        // Strategy 3: FreeReflection fallback (legacy)
+        if (!hiddenApiDisabled) {
             try {
                 Reflection.unseal(context);
+                Slog.d(TAG, "Hidden API disabled via FreeReflection");
             } catch (Throwable t) {
                 Slog.w(TAG, "Reflection.unseal failed: " + t.getMessage());
             }
@@ -1609,7 +1639,27 @@ public class BlackBoxCore extends ClientConfiguration {
             // Don't fail initialization if VPN service fails
         }
     }
-    
+
+    /**
+     * Start VPN service after permission has been granted
+     * Called by VpnPermissionActivity after user grants permission
+     */
+    public void startVpnServiceWithPermission() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Intent vpnIntent = new Intent(getContext(), top.niunaijun.blackbox.proxy.ProxyVpnService.class);
+                    vpnIntent.setAction("android.net.VpnService");
+                    getContext().startForegroundService(vpnIntent);
+                    Slog.d(TAG, "VPN service started with permission");
+                } catch (Exception e) {
+                    Slog.w(TAG, "Failed to start VPN service: " + e.getMessage());
+                }
+            }
+        }, "VPNServiceStart").start();
+    }
+
     /**
      * Ensure proper initialization order for all components
      */
