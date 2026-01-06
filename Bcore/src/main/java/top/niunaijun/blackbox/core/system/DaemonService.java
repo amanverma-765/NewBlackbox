@@ -149,24 +149,15 @@ public class DaemonService extends Service {
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
             Log.i(TAG, "DaemonInnerService -> onStartCommand");
-            
-            try {
-                // Cancel the notification from the main service
-                NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                if (nm != null) {
-                    nm.cancel(NOTIFY_ID);
-                    Log.d(TAG, "Notification cancelled successfully");
-                }
-                
-                // Stop this inner service
-                stopSelf();
-                return START_NOT_STICKY;
-                
-            } catch (Exception e) {
-                Log.e(TAG, "Error in DaemonInnerService: " + e.getMessage(), e);
-                stopSelf();
-                return START_NOT_STICKY;
-            }
+
+            // IMPORTANT: Do NOT cancel the notification!
+            // Keeping the foreground notification active prevents Android 16's
+            // process freezer from freezing the :black process (BR_FROZEN_REPLY fix)
+            Log.d(TAG, "DaemonInnerService completed, keeping notification active for freeze protection");
+
+            // Stop this inner service (but leave the main service's notification)
+            stopSelf();
+            return START_NOT_STICKY;
         }
 
         @Override
