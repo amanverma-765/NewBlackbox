@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BlackBox"
         android:enableOnBackInvokedCallback="true"
-        tools:targetApi="n">
+        tools:targetApi="upside_down_cake">
         <activity
             android:name=".view.fake.FollowMyLocationOverlay"
             android:exported="false" />
