@@ -5,7 +5,7 @@ import android.os.IInterface;
 import java.lang.reflect.Method;
 
 import black.android.content.BRAttributionSource;
-import top.niunaijun.blackbox.app.BActivityThread;
+import top.niunaijun.blackbox.BlackBoxCore;
 import top.niunaijun.blackbox.fake.hook.ClassInvocationStub;
 import top.niunaijun.blackbox.utils.compat.ContextCompat;
 import top.niunaijun.blackbox.utils.Slog;
@@ -66,7 +66,7 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
                 } else if (arg != null && arg.getClass().getName().equals(BRAttributionSource.getRealClass().getName())) {
                     // Fix AttributionSource UID
                     try {
-                        ContextCompat.fixAttributionSourceState(arg, BActivityThread.getBUid());
+                        ContextCompat.fixAttributionSourceState(arg, BlackBoxCore.getHostUid());
                     } catch (Exception e) {
                         // If fixing AttributionSource fails, try to create a new one or skip
                         Slog.w(TAG, "Failed to fix AttributionSource, continuing with original");
@@ -225,21 +225,21 @@ public class ContentProviderStub extends ClassInvocationStub implements BContent
             try {
                 java.lang.reflect.Field uidField = attributionSourceClass.getDeclaredField("mUid");
                 uidField.setAccessible(true);
-                uidField.set(attributionSource, BActivityThread.getBUid());
+                uidField.set(attributionSource, BlackBoxCore.getHostUid());
                 Slog.d(TAG, "Fixed AttributionSource UID via field access");
             } catch (NoSuchFieldException e) {
                 // Try alternative field names
                 try {
                     java.lang.reflect.Field uidField = attributionSourceClass.getDeclaredField("uid");
                     uidField.setAccessible(true);
-                    uidField.set(attributionSource, BActivityThread.getBUid());
+                    uidField.set(attributionSource, BlackBoxCore.getHostUid());
                     Slog.d(TAG, "Fixed AttributionSource UID via alternative field");
                 } catch (NoSuchFieldException e2) {
                     // Try using setter method
                     try {
                         java.lang.reflect.Method setUidMethod = attributionSourceClass.getDeclaredMethod("setUid", int.class);
                         setUidMethod.setAccessible(true);
-                        setUidMethod.invoke(attributionSource, BActivityThread.getBUid());
+                        setUidMethod.invoke(attributionSource, BlackBoxCore.getHostUid());
                         Slog.d(TAG, "Fixed AttributionSource UID via setter method");
                     } catch (Exception e3) {
                         Slog.w(TAG, "Could not fix AttributionSource UID: " + e3.getMessage());
