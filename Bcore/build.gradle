@@ -16,13 +16,11 @@ android {
     }
     defaultConfig {
         minSdkVersion rootProject.ext.minSdk
-        versionCode rootProject.ext.versionCode
-        versionName rootProject.ext.versionName
 
         consumerProguardFiles "consumer-rules.pro"
         ndk {
             // 设置支持的SO库架构
-            abiFilters 'arm64-v8a' , 'armeabi-v7a'
+            abiFilters 'arm64-v8a'
         }
     }
 
@@ -54,20 +52,19 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
-    packagingOptions {
+    packaging {
         jniLibs {
-            useLegacyPackaging true
+            useLegacyPackaging = true
         }
     }
-    lintOptions {
-
-        checkReleaseBuilds false
-        abortOnError false
-        warningsAsErrors false
-        disable "UnusedResources", 'RestrictedApi'
-        textOutput "stdout"
-        textReport false
-        checkOnly 'NewApi', 'InlinedApi'
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+        warningsAsErrors = false
+        disable += ["UnusedResources", "RestrictedApi"]
+        textOutput = file("stdout")
+        textReport = false
+        checkOnly += ["NewApi", "InlinedApi"]
     }
 }
 
