@@ -11,6 +11,10 @@ import top.niunaijun.blackreflection.annotation.BField;
 import top.niunaijun.blackreflection.annotation.BMethod;
 import top.niunaijun.blackreflection.annotation.BParamClassName;
 
+/**
+ * Reflection interface for android.app.IActivityManager.
+ * Consolidated from IActivityManager + IActivityManagerN for API 29+.
+ */
 @BClassName("android.app.IActivityManager")
 public interface IActivityManager {
     @BMethod
@@ -29,6 +33,10 @@ public interface IActivityManager {
     Integer startActivity(@BParamClassName("android.app.IApplicationThread") Object caller, String callingPackage,
                           Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode,
                           int startFlags, @BParamClassName("android.app.ProfilerInfo") Object profilerInfo, Bundle bOptions);
+
+    // Merged from IActivityManagerN (API 24+, always available on API 29+)
+    @BMethod
+    Boolean finishActivity(IBinder IBinder0, int int1, Intent Intent2, int int3);
 
     @BClassName("android.app.IActivityManager$ContentProviderHolder")
     interface ContentProviderHolderMIUI {

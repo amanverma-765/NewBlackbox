@@ -4,9 +4,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.content.Context;
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -19,7 +16,6 @@ import top.niunaijun.blackbox.fake.hook.BinderInvocationStub;
 import top.niunaijun.blackbox.fake.hook.MethodHook;
 import top.niunaijun.blackbox.fake.hook.ProxyMethod;
 import top.niunaijun.blackbox.utils.MethodParameterUtils;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 import top.niunaijun.blackbox.utils.compat.ParceledListSliceCompat;
 
 /**
@@ -91,11 +87,9 @@ public class INotificationManagerProxy extends BinderInvocationStub {
             return 0;
         }
 
+        // Always return 2 on API 29+ (R+ index)
         public int getTagIndex() {
-            if (BuildCompat.isR()) {
-                return 2;
-            }
-            return 1;
+            return 2;
         }
 
         public int getIdIndex() {
@@ -126,7 +120,6 @@ public class INotificationManagerProxy extends BinderInvocationStub {
     }
 
     @ProxyMethod("createNotificationChannels")
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static class CreateNotificationChannels extends MethodHook {
 
         @Override
@@ -152,7 +145,6 @@ public class INotificationManagerProxy extends BinderInvocationStub {
     }
 
     @ProxyMethod("createNotificationChannelGroups")
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static class CreateNotificationChannelGroups extends MethodHook {
 
         @Override

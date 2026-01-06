@@ -36,40 +36,8 @@ public class BuildCompat {
         return Build.VERSION.SDK_INT >= 30 || (Build.VERSION.SDK_INT >= 29 && Build.VERSION.PREVIEW_SDK_INT == 1);
     }
 
-    // Android 10 (API 29) - baseline, always true
-    public static boolean isQ() {
-        return true;
-    }
-
-    // Android 9 (API 28) - always true on Android 10+
-    public static boolean isPie() {
-        return true;
-    }
-
-    // Android 8 (API 26) - always true on Android 10+
-    public static boolean isOreo() {
-        return true;
-    }
-
-    // Android 7.1 (API 25) - always true on Android 10+
-    public static boolean isN_MR1() {
-        return true;
-    }
-
-    // Android 7 (API 24) - always true on Android 10+
-    public static boolean isN() {
-        return true;
-    }
-
-    // Android 6 (API 23) - always true on Android 10+
-    public static boolean isM() {
-        return true;
-    }
-
-    // Android 5 (API 21) - always true on Android 10+
-    public static boolean isL() {
-        return true;
-    }
+    // Note: Methods isQ(), isPie(), isOreo(), isN_MR1(), isN(), isM(), isL()
+    // were removed as they always return true on minSdk 29 (Android 10+)
 
     public static boolean isSamsung() {
         return "samsung".equalsIgnoreCase(Build.BRAND) || "samsung".equalsIgnoreCase(Build.MANUFACTURER);

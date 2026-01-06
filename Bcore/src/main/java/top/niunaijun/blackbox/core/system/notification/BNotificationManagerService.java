@@ -1,14 +1,12 @@
 package top.niunaijun.blackbox.core.system.notification;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Binder;
-import android.os.Build;
 import android.os.RemoteException;
 
 import java.util.ArrayList;
@@ -16,12 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import black.android.app.BRNotification;
 import black.android.app.BRNotificationChannel;
 import black.android.app.BRNotificationChannelGroup;
-import black.android.app.BRNotificationO;
 import black.android.app.NotificationChannelContext;
 import black.android.app.NotificationChannelGroupContext;
-import black.android.app.NotificationOContext;
+import black.android.app.NotificationContext;
 import top.niunaijun.blackbox.BlackBoxCore;
 import top.niunaijun.blackbox.core.system.BProcessManagerService;
 import top.niunaijun.blackbox.core.system.ISystemService;
@@ -71,7 +69,6 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.O)
     public NotificationChannel getNotificationChannel(String channelId, int userId) throws RemoteException {
         int callingPid = getCallingPid();
         ProcessRecord processByPid = BProcessManagerService.get().findProcessByPid(callingPid);
@@ -100,7 +97,6 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.O)
     public void createNotificationChannel(NotificationChannel notificationChannel, int userId) {
         int callingPid = getCallingPid();
         ProcessRecord processByPid = BProcessManagerService.get().findProcessByPid(callingPid);
@@ -117,7 +113,6 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.O)
     public void deleteNotificationChannel(String channelId, int userId) {
         int callingPid = getCallingPid();
         ProcessRecord processByPid = BProcessManagerService.get().findProcessByPid(callingPid);
@@ -134,7 +129,6 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.O)
     public void createNotificationChannelGroup(NotificationChannelGroup notificationChannelGroup, int userId) {
         int callingPid = getCallingPid();
         ProcessRecord processByPid = BProcessManagerService.get().findProcessByPid(callingPid);
@@ -151,7 +145,6 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.O)
     public void deleteNotificationChannelGroup(String groupId, int userId) {
         int callingPid = getCallingPid();
         ProcessRecord processByPid = BProcessManagerService.get().findProcessByPid(callingPid);
@@ -174,18 +167,11 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
             return;
         int notificationId = getNotificationId(userId, id, processByPid.getPackageName());
 
-        // Always use Oreo+ notification API on API 29+
-        NotificationOContext notificationOContext = BRNotificationO.get(notification);
-        // channel
-        if (notificationOContext._check_mChannelId() != null) {
-            String blackChannelId = getBlackChannelId(notificationOContext.mChannelId(), userId);
-            notificationOContext._set_mChannelId(blackChannelId);
-        }
-        // group
-        if (notificationOContext._check_mGroupKey() != null) {
-            String blackGroupId = getBlackGroupId(notificationOContext.mGroupKey(), userId);
-            notificationOContext._set_mGroupKey(blackGroupId);
-        }
+        NotificationContext notificationContext = BRNotification.get(notification);
+        String blackChannelId = getBlackChannelId(notificationContext.mChannelId(), userId);
+        notificationContext._set_mChannelId(blackChannelId);
+        String blackGroupId = getBlackGroupId(notificationContext.mGroupKey(), userId);
+        notificationContext._set_mGroupKey(blackGroupId);
         NotificationRecord notificationRecord = getNotificationRecord(processByPid.getPackageName(), userId);
         synchronized (notificationRecord.mIds) {
             notificationRecord.mIds.add(notificationId);
@@ -207,7 +193,6 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
     private void handleNotificationChannel(NotificationChannel notificationChannel, int userId) {
         NotificationChannelContext channelContext = BRNotificationChannel.get(notificationChannel);
         String channelId = channelContext.mId();

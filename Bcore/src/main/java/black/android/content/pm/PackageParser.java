@@ -8,7 +8,6 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 
 import java.io.File;
 import java.util.List;
@@ -17,32 +16,24 @@ import top.niunaijun.blackreflection.annotation.BClassName;
 import top.niunaijun.blackreflection.annotation.BConstructor;
 import top.niunaijun.blackreflection.annotation.BField;
 import top.niunaijun.blackreflection.annotation.BMethod;
+import top.niunaijun.blackreflection.annotation.BStaticMethod;
 
+/**
+ * Reflection interface for android.content.pm.PackageParser.
+ * Consolidated from PackageParser + PackageParserMarshmallow + PackageParserPie for API 29+.
+ */
 @BClassName("android.content.pm.PackageParser")
 public interface PackageParser {
+    // Merged from PackageParserMarshmallow (API 23+, always available on API 29+)
     @BConstructor
-    android.content.pm.PackageParser _new(String String0);
-
-//    @BStaticMethod
-//    ActivityInfo generateActivityInfo();
-//
-//    @BStaticMethod
-//    ApplicationInfo generateApplicationInfo();
-//
-//    @BStaticMethod
-//    PackageInfo generatePackageInfo();
-//
-//    @BStaticMethod
-//    ProviderInfo generateProviderInfo();
-//
-//    @BStaticMethod
-//    ServiceInfo generateServiceInfo();
+    android.content.pm.PackageParser _new();
 
     @BMethod
-    void collectCertificates(android.content.pm.PackageParser.Package p, int flags);
+    android.content.pm.PackageParser.Package parsePackage(File File0, int int1);
 
-    @BMethod
-    android.content.pm.PackageParser.Package parsePackage(File File0, String String1, DisplayMetrics DisplayMetrics2, int int3);
+    // Merged from PackageParserPie (API 28+, always available on API 29+)
+    @BStaticMethod
+    void collectCertificates(android.content.pm.PackageParser.Package p, boolean skipVerify);
 
     @BClassName("android.content.pm.PackageParser$SigningDetails")
     interface SigningDetails {

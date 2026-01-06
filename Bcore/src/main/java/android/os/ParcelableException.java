@@ -1,7 +1,5 @@
 package android.os;
 
-import android.annotation.TargetApi;
-
 import java.io.IOException;
 
 /**
@@ -17,8 +15,9 @@ import java.io.IOException;
  * <li>The receiver side must catch any thrown {@link ParcelableException} and
  * call {@link #maybeRethrow(Class)} for all expected exception types.
  * </ul>
+ *
+ * Note: Available since API 26 (Oreo), always available on minSdk 29.
  */
-@TargetApi(Build.VERSION_CODES.O)
 public final class ParcelableException extends RuntimeException implements Parcelable {
     public ParcelableException(Throwable t) {
         super(t);

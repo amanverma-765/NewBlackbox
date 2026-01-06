@@ -5,7 +5,6 @@ import android.content.ContextWrapper;
 import android.util.*;
 
 import black.android.app.BRContextImpl;
-import black.android.app.BRContextImplKitkat;
 import black.android.content.AttributionSourceStateContext;
 import black.android.content.BRAttributionSource;
 import black.android.content.BRAttributionSourceState;
@@ -68,7 +67,7 @@ public class ContextCompat {
             }
 
             BRContextImpl.get(context)._set_mBasePackageName(BlackBoxCore.getHostPkg());
-            BRContextImplKitkat.get(context)._set_mOpPackageName(BlackBoxCore.getHostPkg());
+            BRContextImpl.get(context)._set_mOpPackageName(BlackBoxCore.getHostPkg());
             
             try {
                 BRContentResolver.get(context.getContentResolver())._set_mPackageName(BlackBoxCore.getHostPkg());

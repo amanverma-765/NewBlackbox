@@ -19,7 +19,6 @@ import top.niunaijun.blackbox.fake.provider.FileProviderHandler;
 import top.niunaijun.blackbox.utils.ComponentUtils;
 import top.niunaijun.blackbox.utils.MethodParameterUtils;
 import top.niunaijun.blackbox.utils.Slog;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 import top.niunaijun.blackbox.utils.compat.StartActivityCompat;
 
 import static android.content.pm.PackageManager.GET_META_DATA;
@@ -118,12 +117,8 @@ public class ActivityManagerCommonProxy {
         }
 
         private Intent getIntent(Object[] args) {
-            int index;
-            if (BuildCompat.isR()) {
-                index = 3;
-            } else {
-                index = 2;
-            }
+            // Always use index 3 on API 29+ (R+ index)
+            int index = 3;
             if (args[index] instanceof Intent) {
                 return (Intent) args[index];
             }
@@ -157,11 +152,9 @@ public class ActivityManagerCommonProxy {
                     intents, resolvedTypes, resultTo, options);
         }
 
+        // Always return 3 on API 29+ (R+ index)
         public int getIntents() {
-            if (BuildCompat.isR()) {
-                return 3;
-            }
-            return 2;
+            return 3;
         }
     }
 

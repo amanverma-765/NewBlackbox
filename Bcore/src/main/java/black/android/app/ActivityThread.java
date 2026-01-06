@@ -144,11 +144,7 @@ public interface ActivityThread {
         List<android.content.pm.ProviderInfo> providers();
     }
 
-    @BClassName("android.app.ActivityThread$ProviderKey")
-    interface ProviderKeyJBMR1 {
-        @BConstructor
-        ProviderKeyJBMR1 _new(String String0, int int1);
-    }
+    // Note: ProviderKeyJBMR1 (API 17) removed - dead code on minSdk 29
 
     @BClassName("android.app.ActivityThread$ProviderClientRecord")
     interface ProviderClientRecordJB {

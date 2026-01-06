@@ -47,7 +47,6 @@ import black.android.app.BRActivityManagerNative;
 import black.android.app.BRActivityThread;
 import black.android.app.BRActivityThreadActivityClientRecord;
 import black.android.app.BRActivityThreadAppBindData;
-import black.android.app.BRActivityThreadNMR1;
 import black.android.app.BRActivityThreadQ;
 import black.android.app.BRContextImpl;
 import black.android.app.BRLoadedApk;
@@ -388,10 +387,6 @@ public class BActivityThread extends IBActivityThread.Stub {
         BRLoadedApk.get(loadedApk)._set_mApplicationInfo(applicationInfo);
 
         int targetSdkVersion = applicationInfo.targetSdkVersion;
-        if (targetSdkVersion < Build.VERSION_CODES.GINGERBREAD) {
-            StrictMode.ThreadPolicy newPolicy = new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy()).permitNetwork().build();
-            StrictMode.setThreadPolicy(newPolicy);
-        }
         // Disable FileUriExposure death for apps targeting < N (always available on API 29+)
         if (targetSdkVersion < Build.VERSION_CODES.N) {
             StrictModeCompat.disableDeathOnFileUriExposure();
@@ -1160,19 +1155,11 @@ public class BActivityThread extends IBActivityThread.Stub {
             // Always use ReferrerIntent (API 22+, always available on API 29+)
             Intent newIntent = BRReferrerIntent.get()._new(intent, BlackBoxCore.getHostPkg());
             Object mainThread = BlackBoxCore.mainThread();
-            if (BRActivityThread.get(BlackBoxCore.mainThread())._check_performNewIntents(null, null) != null) {
-                BRActivityThread.get(mainThread).performNewIntents(
-                        token,
-                        Collections.singletonList(newIntent)
-                );
-            } else if (BRActivityThreadNMR1.get(mainThread)._check_performNewIntents(null, null, false) != null) {
-                BRActivityThreadNMR1.get(mainThread).performNewIntents(
-                        token,
-                        Collections.singletonList(newIntent),
-                        true);
-            } else if (BRActivityThreadQ.get(mainThread)._check_handleNewIntent(null, null) != null) {
-                BRActivityThreadQ.get(mainThread).handleNewIntent(token, Collections.singletonList(newIntent));
-            }
+            // Simplified for minSdk 29 - use standard Android 10+ API
+            BRActivityThread.get(mainThread).performNewIntents(
+                    token,
+                    Collections.singletonList(newIntent)
+            );
         });
     }
 

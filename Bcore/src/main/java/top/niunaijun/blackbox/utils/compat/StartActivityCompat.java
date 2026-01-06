@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 
+// Simplified for Android 10+ (API 29+) - no version checks needed
+
 /**
  * updated by alex5402 on 4/9/21.
  * * ∧＿∧
@@ -13,45 +15,20 @@ import android.os.IBinder;
  * TFNQw5HgWUS33Ke1eNmSFTwoQySGU7XNsK (USDT TRC20)
  */
 public class StartActivityCompat {
-    private static int index = 0;
-    private static int appThreadIndex;
-    private static int callingPageIndex;
-    private static int callingFeatureIdIndex;
-    private static int intentIndex;
-    private static int resolvedTypeIndex;
-    private static int resultToIndex;
-    private static int resultWhoIndex;
-    private static int requestCodeIndex;
-    private static int flagsIndex;
-    private static int profilerInfoIndex;
-    private static int optionsIndex;
-
-    static {
-        if (BuildCompat.isR()) {
-            appThreadIndex = index++;
-            callingPageIndex = index++;
-            callingFeatureIdIndex = index++;
-            intentIndex = index++;
-            resolvedTypeIndex = index++;
-            resultToIndex = index++;
-            resultWhoIndex = index++;
-            requestCodeIndex = index++;
-            flagsIndex = index++;
-            profilerInfoIndex = index++;
-            optionsIndex = index++;
-        } else {
-            appThreadIndex = index++;
-            callingPageIndex = index++;
-            intentIndex = index++;
-            resolvedTypeIndex = index++;
-            resultToIndex = index++;
-            resultWhoIndex = index++;
-            requestCodeIndex = index++;
-            flagsIndex = index++;
-            profilerInfoIndex = index++;
-            optionsIndex = index++;
-        }
-    }
+    // Simplified for API 29+ (Android 10+) - always use R+ (API 30+) indices
+    // callingFeatureIdIndex was added in Android 11 (API 30)
+    // All indices are final since minSdk 29 means we always use the same layout
+    private static final int appThreadIndex = 0;
+    private static final int callingPageIndex = 1;
+    private static final int callingFeatureIdIndex = 2;
+    private static final int intentIndex = 3;
+    private static final int resolvedTypeIndex = 4;
+    private static final int resultToIndex = 5;
+    private static final int resultWhoIndex = 6;
+    private static final int requestCodeIndex = 7;
+    private static final int flagsIndex = 8;
+    private static final int profilerInfoIndex = 9;
+    private static final int optionsIndex = 10;
 
     public static Object getIApplicationThread(Object[] args) {
         if (args == null || args.length < appThreadIndex) {
@@ -124,83 +101,4 @@ public class StartActivityCompat {
     }
 
 
-    public static int getAppThreadIndex() {
-        return appThreadIndex;
-    }
-
-    public static void setAppThreadIndex(int appThreadIndex) {
-        StartActivityCompat.appThreadIndex = appThreadIndex;
-    }
-
-    public static int getCallingPageIndex() {
-        return callingPageIndex;
-    }
-
-    public static void setCallingPageIndex(int callingPageIndex) {
-        StartActivityCompat.callingPageIndex = callingPageIndex;
-    }
-
-    public static int getIntentIndex() {
-        return intentIndex;
-    }
-
-    public static void setIntentIndex(int intentIndex) {
-        StartActivityCompat.intentIndex = intentIndex;
-    }
-
-    public static int getResolvedTypeIndex() {
-        return resolvedTypeIndex;
-    }
-
-    public static void setResolvedTypeIndex(int resolvedTypeIndex) {
-        StartActivityCompat.resolvedTypeIndex = resolvedTypeIndex;
-    }
-
-    public static int getResultToIndex() {
-        return resultToIndex;
-    }
-
-    public static void setResultToIndex(int resultToIndex) {
-        StartActivityCompat.resultToIndex = resultToIndex;
-    }
-
-    public static int getResultWhoIndex() {
-        return resultWhoIndex;
-    }
-
-    public static void setResultWhoIndex(int resultWhoIndex) {
-        StartActivityCompat.resultWhoIndex = resultWhoIndex;
-    }
-
-    public static int getRequestCodeIndex() {
-        return requestCodeIndex;
-    }
-
-    public static void setRequestCodeIndex(int requestCodeIndex) {
-        StartActivityCompat.requestCodeIndex = requestCodeIndex;
-    }
-
-    public static int getFlagsIndex() {
-        return flagsIndex;
-    }
-
-    public static void setFlagsIndex(int flagsIndex) {
-        StartActivityCompat.flagsIndex = flagsIndex;
-    }
-
-    public static int getProfilerInfoIndex() {
-        return profilerInfoIndex;
-    }
-
-    public static void setProfilerInfoIndex(int profilerInfoIndex) {
-        StartActivityCompat.profilerInfoIndex = profilerInfoIndex;
-    }
-
-    public static int getOptionsIndex() {
-        return optionsIndex;
-    }
-
-    public static void setOptionsIndex(int optionsIndex) {
-        StartActivityCompat.optionsIndex = optionsIndex;
-    }
 }

@@ -1,8 +1,6 @@
 package top.niunaijun.blackbox.fake.service;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 
 import java.lang.reflect.Method;
 
@@ -13,8 +11,8 @@ import top.niunaijun.blackbox.utils.MethodParameterUtils;
 
 /**
  * Created by BlackBox on 2022/3/3.
+ * Note: Storage stats API available since API 26, always available on minSdk 29.
  */
-@TargetApi(Build.VERSION_CODES.O)
 public class IStorageStatsManagerProxy extends BinderInvocationStub {
 
     public IStorageStatsManagerProxy() {

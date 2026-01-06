@@ -20,8 +20,7 @@ import android.os.Build;
 import java.util.HashSet;
 import java.util.Set;
 
-import black.android.content.pm.BRApplicationInfoL;
-import black.android.content.pm.BRApplicationInfoN;
+import black.android.content.pm.BRApplicationInfo;
 import black.android.content.pm.BRPackageParserSigningDetails;
 import black.android.content.pm.BRSigningInfo;
 import black.android.content.res.BRAssetManager;
@@ -313,26 +312,17 @@ public class PackageManagerCompat {
         ai.uid = p.mExtras.appId;
 //        ai.uid = baseApplication.uid;
 
-        // Always set L+ ApplicationInfo fields on API 29+
-        BRApplicationInfoL.get(ai)._set_primaryCpuAbi(Build.CPU_ABI);
-        BRApplicationInfoL.get(ai)._set_scanPublicSourceDir(BRApplicationInfoL.get(baseApplication).scanPublicSourceDir());
-        BRApplicationInfoL.get(ai)._set_scanSourceDir(BRApplicationInfoL.get(baseApplication).scanSourceDir());
+        // Set ApplicationInfo fields (consolidated for API 29+)
+        BRApplicationInfo.get(ai)._set_primaryCpuAbi(Build.CPU_ABI);
+        BRApplicationInfo.get(ai)._set_scanPublicSourceDir(BRApplicationInfo.get(baseApplication).scanPublicSourceDir());
+        BRApplicationInfo.get(ai)._set_scanSourceDir(BRApplicationInfo.get(baseApplication).scanSourceDir());
 
-        // Always set N+ ApplicationInfo fields on API 29+
         ai.deviceProtectedDataDir = BEnvironment.getDeDataDir(p.packageName, userId).getAbsolutePath();
 
-        if (BRApplicationInfoN.get(ai)._check_deviceEncryptedDataDir() != null) {
-            BRApplicationInfoN.get(ai)._set_deviceEncryptedDataDir(ai.deviceProtectedDataDir);
-        }
-        if (BRApplicationInfoN.get(ai)._check_credentialEncryptedDataDir() != null) {
-            BRApplicationInfoN.get(ai)._set_credentialEncryptedDataDir(ai.dataDir);
-        }
-        if (BRApplicationInfoN.get(ai)._check_deviceProtectedDataDir() != null) {
-            BRApplicationInfoN.get(ai)._set_deviceProtectedDataDir(ai.deviceProtectedDataDir);
-        }
-        if (BRApplicationInfoN.get(ai)._check_credentialProtectedDataDir() != null) {
-            BRApplicationInfoN.get(ai)._set_credentialProtectedDataDir(ai.dataDir);
-        }
+        BRApplicationInfo.get(ai)._set_deviceEncryptedDataDir(ai.deviceProtectedDataDir);
+        BRApplicationInfo.get(ai)._set_credentialEncryptedDataDir(ai.dataDir);
+        BRApplicationInfo.get(ai)._set_deviceProtectedDataDir(ai.deviceProtectedDataDir);
+        BRApplicationInfo.get(ai)._set_credentialProtectedDataDir(ai.dataDir);
         fixJar(ai);
         return ai;
     }
@@ -352,14 +342,11 @@ public class PackageManagerCompat {
         String APACHE_LEGACY_JAR = "/system/framework/org.apache.http.legacy.boot.jar";
         String APACHE_LEGACY_JAR_Q = "/system/framework/org.apache.http.legacy.jar";
         Set<String> sharedLibraryFileList = new HashSet<>();
-        if (BuildCompat.isQ()) {
-            if (!FileUtils.isExist(APACHE_LEGACY_JAR_Q)) {
-                sharedLibraryFileList.add(APACHE_LEGACY_JAR);
-            } else {
-                sharedLibraryFileList.add(APACHE_LEGACY_JAR_Q);
-            }
-        } else {
+        // Always use Q+ path (minSdk 29)
+        if (!FileUtils.isExist(APACHE_LEGACY_JAR_Q)) {
             sharedLibraryFileList.add(APACHE_LEGACY_JAR);
+        } else {
+            sharedLibraryFileList.add(APACHE_LEGACY_JAR_Q);
         }
 //        if (BXposedManagerService.get().isXPEnable()) {
 //            ApplicationInfo base = BlackBoxCore.getContext().getApplicationInfo();

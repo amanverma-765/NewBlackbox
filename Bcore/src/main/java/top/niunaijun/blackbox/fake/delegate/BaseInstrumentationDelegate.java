@@ -418,7 +418,6 @@ public class BaseInstrumentationDelegate extends Instrumentation {
                 Bundle.class).callByCaller(mBaseInstrumentation, new Object[]{context, binder, binder1, fragment, intent, i, bundle});
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public ActivityResult execStartActivity(Context context, IBinder iBinder, IBinder iBinder2, Activity activity, Intent intent, int i, Bundle bundle, UserHandle userHandle) throws Throwable {
         return invokeExecStartActivity(mBaseInstrumentation,
                 Context.class,

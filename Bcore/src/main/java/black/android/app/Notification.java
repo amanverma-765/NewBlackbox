@@ -1,13 +1,18 @@
 package black.android.app;
 
-import android.app.PendingIntent;
-import android.content.Context;
-
 import top.niunaijun.blackreflection.annotation.BClassName;
-import top.niunaijun.blackreflection.annotation.BMethod;
+import top.niunaijun.blackreflection.annotation.BField;
 
+/**
+ * Reflection interface for android.app.Notification.
+ * Consolidated from NotificationO for API 29+ (notification channels).
+ * Note: setLatestEventInfo was removed as it was deprecated in API 23.
+ */
 @BClassName("android.app.Notification")
 public interface Notification {
-    @BMethod
-    void setLatestEventInfo(Context Context0, CharSequence CharSequence1, CharSequence CharSequence2, PendingIntent PendingIntent3);
+    @BField
+    String mChannelId();
+
+    @BField
+    String mGroupKey();
 }

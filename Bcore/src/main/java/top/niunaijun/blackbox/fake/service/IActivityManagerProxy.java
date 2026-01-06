@@ -19,8 +19,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import black.android.app.BRActivityManager;
 import black.android.app.BRActivityManagerNative;
-import black.android.app.BRActivityManagerOreo;
 import black.android.app.BRLoadedApkReceiverDispatcher;
 import black.android.app.BRLoadedApkReceiverDispatcherInnerReceiver;
 import black.android.app.BRLoadedApkServiceDispatcher;
@@ -75,15 +75,13 @@ public class IActivityManagerProxy extends ClassInvocationStub {
 
     @Override
     protected Object getWho() {
-        // Always use Oreo+ API on API 29+
-        Object iActivityManager = BRActivityManagerOreo.get().IActivityManagerSingleton();
+        Object iActivityManager = BRActivityManager.get().IActivityManagerSingleton();
         return BRSingleton.get(iActivityManager).get();
     }
 
     @Override
     protected void inject(Object base, Object proxy) {
-        // Always use Oreo+ API on API 29+
-        Object iActivityManager = BRActivityManagerOreo.get().IActivityManagerSingleton();
+        Object iActivityManager = BRActivityManager.get().IActivityManagerSingleton();
         BRSingleton.get(iActivityManager)._set_mInstance(proxy);
     }
 
@@ -462,11 +460,8 @@ public class IActivityManagerProxy extends ClassInvocationStub {
                     return i;
                 }
             }
-            if (BuildCompat.isR()) {
-                return 6;
-            } else {
-                return 5;
-            }
+            // Always return 6 on API 29+ (R+ index)
+            return 6;
         }
     }
 
@@ -619,18 +614,15 @@ public class IActivityManagerProxy extends ClassInvocationStub {
             return method.invoke(who, args);
         }
 
+        // Indices for API 31+ (Android 12+)
+        // For API 29-30, these methods may return wrong indices but registerReceiverWithFeature
+        // was only added in API 30, so we use API 31+ indices
         public int getReceiverIndex() {
-            if (BuildCompat.isS()) {
-                return 4;
-            }
-            return 3;
+            return 4;
         }
 
         public int getPermissionIndex() {
-            if (BuildCompat.isS()) {
-                return 6;
-            }
-            return 5;
+            return 6;
         }
     }
 
