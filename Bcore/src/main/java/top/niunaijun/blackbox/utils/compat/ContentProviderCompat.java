@@ -3,18 +3,17 @@ package top.niunaijun.blackbox.utils.compat;
 import android.content.ContentProviderClient;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
 
+/**
+ * ContentProvider compatibility utilities.
+ * Simplified for Android 10+ (API 29+).
+ */
 public class ContentProviderCompat {
 
     public static Bundle call(Context context, Uri uri, String method, String arg, Bundle extras, int retryCount) throws IllegalAccessException {
-        if (VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return context.getContentResolver().call(uri, method, arg, extras);
-        }
         ContentProviderClient client = acquireContentProviderClientRetry(context, uri, retryCount);
         try {
             if (client == null) {
@@ -31,10 +30,7 @@ public class ContentProviderCompat {
 
     private static ContentProviderClient acquireContentProviderClient(Context context, Uri uri) {
         try {
-            if (VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                return context.getContentResolver().acquireUnstableContentProviderClient(uri);
-            }
-            return context.getContentResolver().acquireContentProviderClient(uri);
+            return context.getContentResolver().acquireUnstableContentProviderClient(uri);
         } catch (SecurityException e) {
             e.printStackTrace();
         }
@@ -47,13 +43,13 @@ public class ContentProviderCompat {
             int retry = 0;
             long startTime = System.currentTimeMillis();
             long timeout = 2000; // 2 seconds total timeout
-            
+
             while (retry < retryCount && client == null) {
                 // Check if we've exceeded total timeout
                 if (System.currentTimeMillis() - startTime > timeout) {
                     break;
                 }
-                
+
                 SystemClock.sleep(200); // Reduced from 400ms to 200ms
                 retry++;
                 client = acquireContentProviderClient(context, uri);
@@ -68,13 +64,13 @@ public class ContentProviderCompat {
             int retry = 0;
             long startTime = System.currentTimeMillis();
             long timeout = 2000; // 2 seconds total timeout
-            
+
             while (retry < retryCount && client == null) {
                 // Check if we've exceeded total timeout
                 if (System.currentTimeMillis() - startTime > timeout) {
                     break;
                 }
-                
+
                 SystemClock.sleep(200); // Reduced from 400ms to 200ms
                 retry++;
                 client = acquireContentProviderClient(context, name);
@@ -84,20 +80,13 @@ public class ContentProviderCompat {
     }
 
     private static ContentProviderClient acquireContentProviderClient(Context context, String name) {
-        if (VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            return context.getContentResolver().acquireUnstableContentProviderClient(name);
-        }
-        return context.getContentResolver().acquireContentProviderClient(name);
+        return context.getContentResolver().acquireUnstableContentProviderClient(name);
     }
 
     private static void releaseQuietly(ContentProviderClient client) {
         if (client != null) {
             try {
-                if (VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    client.close();
-                } else {
-                    client.release();
-                }
+                client.close();
             } catch (Exception ignored) {
             }
         }

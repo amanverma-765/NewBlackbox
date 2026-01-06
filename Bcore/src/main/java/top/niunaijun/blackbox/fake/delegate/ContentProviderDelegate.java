@@ -11,18 +11,15 @@ import java.util.Set;
 
 import black.android.app.BRActivityThread;
 import black.android.app.BRActivityThreadProviderClientRecordP;
-import black.android.app.BRIActivityManagerContentProviderHolder;
 import black.android.content.BRContentProviderHolderOreo;
 import black.android.providers.BRSettingsContentProviderHolder;
 import black.android.providers.BRSettingsGlobal;
-import black.android.providers.BRSettingsNameValueCache;
 import black.android.providers.BRSettingsNameValueCacheOreo;
 import black.android.providers.BRSettingsSecure;
 import black.android.providers.BRSettingsSystem;
 import top.niunaijun.blackbox.BlackBoxCore;
 import top.niunaijun.blackbox.fake.service.context.providers.ContentProviderStub;
 import top.niunaijun.blackbox.fake.service.context.providers.SystemProviderStub;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * updated by alex5402 on 3/31/21.
@@ -37,12 +34,8 @@ public class ContentProviderDelegate {
     private static Set<String> sInjected = new HashSet<>();
 
     public static void update(Object holder, String auth) {
-        IInterface iInterface;
-        if (BuildCompat.isOreo()) {
-            iInterface = BRContentProviderHolderOreo.get(holder).provider();
-        } else {
-            iInterface = BRIActivityManagerContentProviderHolder.get(holder).provider();
-        }
+        // Always use Oreo+ API on API 29+
+        IInterface iInterface = BRContentProviderHolderOreo.get(holder).provider();
 
         if (iInterface instanceof Proxy)
             return;
@@ -57,11 +50,8 @@ public class ContentProviderDelegate {
                 bContentProvider = new ContentProviderStub().wrapper(iInterface, BlackBoxCore.getHostPkg());
                 break;
         }
-        if (BuildCompat.isOreo()) {
-            BRContentProviderHolderOreo.get(holder)._set_provider(bContentProvider);
-        } else {
-            BRIActivityManagerContentProviderHolder.get(holder)._set_provider(bContentProvider);
-        }
+        // Always use Oreo+ API on API 29+
+        BRContentProviderHolderOreo.get(holder)._set_provider(bContentProvider);
     }
 
     public static void init() {
@@ -96,7 +86,8 @@ public class ContentProviderDelegate {
         if (cache != null) {
             clearContentProvider(cache);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && BRSettingsGlobal.getRealClass() != null) {
+        // SettingsGlobal is always available on API 29+ (API 17+ class)
+        if (BRSettingsGlobal.getRealClass() != null) {
             cache = BRSettingsGlobal.get().sNameValueCache();
             if (cache != null) {
                 clearContentProvider(cache);
@@ -105,13 +96,10 @@ public class ContentProviderDelegate {
     }
 
     private static void clearContentProvider(Object cache) {
-        if (BuildCompat.isOreo()) {
-            Object holder = BRSettingsNameValueCacheOreo.get(cache).mProviderHolder();
-            if (holder != null) {
-                BRSettingsContentProviderHolder.get(holder)._set_mContentProvider(null);
-            }
-        } else {
-            BRSettingsNameValueCache.get(cache)._set_mContentProvider(null);
+        // Always use Oreo+ API on API 29+
+        Object holder = BRSettingsNameValueCacheOreo.get(cache).mProviderHolder();
+        if (holder != null) {
+            BRSettingsContentProviderHolder.get(holder)._set_mContentProvider(null);
         }
     }
 }

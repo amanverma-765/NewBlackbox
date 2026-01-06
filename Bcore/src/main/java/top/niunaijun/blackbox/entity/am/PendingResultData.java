@@ -8,11 +8,8 @@ import android.os.Parcelable;
 
 import java.util.UUID;
 
-import black.android.content.BRBroadcastReceiverPendingResult;
 import black.android.content.BRBroadcastReceiverPendingResultM;
-import black.android.content.BroadcastReceiverPendingResultContext;
 import black.android.content.BroadcastReceiverPendingResultMContext;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * Created by BlackBox on 2022/2/28.
@@ -33,38 +30,23 @@ public class PendingResultData implements Parcelable {
 
     public PendingResultData(BroadcastReceiver.PendingResult pendingResult) {
         mBToken = UUID.randomUUID().toString();
-        if (BuildCompat.isM()) {
-            BroadcastReceiverPendingResultMContext resultMContext = BRBroadcastReceiverPendingResultM.get(pendingResult);
-            mType = resultMContext.mType();
-            mOrderedHint = resultMContext.mOrderedHint();
-            mInitialStickyHint = resultMContext.mInitialStickyHint();
-            mToken = resultMContext.mToken();
-            mSendingUser = resultMContext.mSendingUser();
-            mFlags = resultMContext.mFlags();
-            mResultData = resultMContext.mResultData();
-            mResultExtras = resultMContext.mResultExtras();
-            mAbortBroadcast = resultMContext.mAbortBroadcast();
-            mFinished = resultMContext.mFinished();
-        } else {
-            BroadcastReceiverPendingResultContext resultContext = BRBroadcastReceiverPendingResult.get(pendingResult);
-            mType = resultContext.mType();
-            mOrderedHint = resultContext.mOrderedHint();
-            mInitialStickyHint = resultContext.mInitialStickyHint();
-            mToken = resultContext.mToken();
-            mSendingUser = resultContext.mSendingUser();
-            mResultData = resultContext.mResultData();
-            mResultExtras = resultContext.mResultExtras();
-            mAbortBroadcast = resultContext.mAbortBroadcast();
-            mFinished = resultContext.mFinished();
-        }
+        // Always use M+ API on API 29+
+        BroadcastReceiverPendingResultMContext resultMContext = BRBroadcastReceiverPendingResultM.get(pendingResult);
+        mType = resultMContext.mType();
+        mOrderedHint = resultMContext.mOrderedHint();
+        mInitialStickyHint = resultMContext.mInitialStickyHint();
+        mToken = resultMContext.mToken();
+        mSendingUser = resultMContext.mSendingUser();
+        mFlags = resultMContext.mFlags();
+        mResultData = resultMContext.mResultData();
+        mResultExtras = resultMContext.mResultExtras();
+        mAbortBroadcast = resultMContext.mAbortBroadcast();
+        mFinished = resultMContext.mFinished();
     }
 
     public BroadcastReceiver.PendingResult build() {
-        if (BuildCompat.isM()) {
-            return BRBroadcastReceiverPendingResultM.get()._new(mResultCode, mResultData, mResultExtras, mType, mOrderedHint, mInitialStickyHint, mToken, mSendingUser, mFlags);
-        } else {
-            return BRBroadcastReceiverPendingResult.get()._new(mResultCode, mResultData, mResultExtras, mType, mOrderedHint, mInitialStickyHint, mToken, mSendingUser);
-        }
+        // Always use M+ API on API 29+
+        return BRBroadcastReceiverPendingResultM.get()._new(mResultCode, mResultData, mResultExtras, mType, mOrderedHint, mInitialStickyHint, mToken, mSendingUser, mFlags);
     }
 
 

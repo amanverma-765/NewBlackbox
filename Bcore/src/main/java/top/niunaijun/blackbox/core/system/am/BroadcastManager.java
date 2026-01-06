@@ -87,11 +87,8 @@ public class BroadcastManager implements PackageMonitor {
                 List<BPackage.ActivityIntentInfo> intents = receiver.intents;
                 for (BPackage.ActivityIntentInfo intent : intents) {
                     ProxyBroadcastReceiver proxyBroadcastReceiver = new ProxyBroadcastReceiver();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        BlackBoxCore.getContext().registerReceiver(proxyBroadcastReceiver, intent.intentFilter, Context.RECEIVER_EXPORTED);
-                    }else{
-                        BlackBoxCore.getContext().registerReceiver(proxyBroadcastReceiver, intent.intentFilter);
-                    }
+                    // Android 10+ always uses RECEIVER_EXPORTED flag
+                    BlackBoxCore.getContext().registerReceiver(proxyBroadcastReceiver, intent.intentFilter, Context.RECEIVER_EXPORTED);
                     addReceiver(bPackage.packageName, proxyBroadcastReceiver);
                 }
             }

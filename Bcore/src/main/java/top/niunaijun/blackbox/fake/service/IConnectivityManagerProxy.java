@@ -271,95 +271,84 @@ public class IConnectivityManagerProxy extends BinderInvocationStub {
         }
     }
 
-    // Enhanced hook for getNetworkCapabilities for API 21+
+    // Enhanced hook for getNetworkCapabilities (Android 10+ always supports this)
     @ProxyMethod("getNetworkCapabilities")
     public static class GetNetworkCapabilities extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            if (android.os.Build.VERSION.SDK_INT >= 21) {
-                try {
-                    // Create NetworkCapabilities using API-specific methods
-                    Object nc;
-                    // Use the universal NetworkCapabilities creation method for all API levels
-                    nc = IConnectivityManagerProxy.createNetworkCapabilities();
-                    
-                    if (nc != null) {
-                        Slog.d(TAG, "Created enhanced NetworkCapabilities for sandboxed app");
-                        return nc;
-                    } else {
-                        Slog.w(TAG, "Failed to create NetworkCapabilities, falling back to original method");
-                        return method.invoke(who, args);
-                    }
-                } catch (Exception e) {
-                    Slog.w(TAG, "Error creating NetworkCapabilities: " + e.getMessage());
+            try {
+                // Create NetworkCapabilities using API-specific methods
+                Object nc = IConnectivityManagerProxy.createNetworkCapabilities();
+
+                if (nc != null) {
+                    Slog.d(TAG, "Created enhanced NetworkCapabilities for sandboxed app");
+                    return nc;
+                } else {
+                    Slog.w(TAG, "Failed to create NetworkCapabilities, falling back to original method");
                     return method.invoke(who, args);
                 }
+            } catch (Exception e) {
+                Slog.w(TAG, "Error creating NetworkCapabilities: " + e.getMessage());
+                return method.invoke(who, args);
             }
-            return method.invoke(who, args);
         }
     }
 
-    // Hook for getActiveNetwork to ensure proper network binding
+    // Hook for getActiveNetwork to ensure proper network binding (Android 10+ always supports this)
     @ProxyMethod("getActiveNetwork")
     public static class GetActiveNetwork extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            if (android.os.Build.VERSION.SDK_INT >= 21) {
+            try {
+                // Create a mock Network object to ensure proper binding
+                // Use reflection to handle different constructor signatures
+                android.net.Network network;
                 try {
-                    // Create a mock Network object to ensure proper binding
-                    // Use reflection to handle different constructor signatures
-                    android.net.Network network;
-                    try {
-                        // Try constructor with int parameter first
-                        Constructor<android.net.Network> constructor = android.net.Network.class.getConstructor(int.class);
-                        network = constructor.newInstance(1);
-                    } catch (Exception e) {
-                        // Try to access the default constructor via reflection
-                        try {
-                            Constructor<android.net.Network> defaultConstructor = android.net.Network.class.getDeclaredConstructor();
-                            defaultConstructor.setAccessible(true);
-                            network = defaultConstructor.newInstance();
-                        } catch (Exception e2) {
-                            // If all else fails, return null and let the original method handle it
-                            Slog.w(TAG, "Could not create Network object, falling back to original method");
-                            return method.invoke(who, args);
-                        }
-                    }
-                    Slog.d(TAG, "Created mock Network object for sandboxed app");
-                    return network;
+                    // Try constructor with int parameter first
+                    Constructor<android.net.Network> constructor = android.net.Network.class.getConstructor(int.class);
+                    network = constructor.newInstance(1);
                 } catch (Exception e) {
-                    Slog.w(TAG, "Error creating Network object: " + e.getMessage());
-                    return method.invoke(who, args);
+                    // Try to access the default constructor via reflection
+                    try {
+                        Constructor<android.net.Network> defaultConstructor = android.net.Network.class.getDeclaredConstructor();
+                        defaultConstructor.setAccessible(true);
+                        network = defaultConstructor.newInstance();
+                    } catch (Exception e2) {
+                        // If all else fails, return null and let the original method handle it
+                        Slog.w(TAG, "Could not create Network object, falling back to original method");
+                        return method.invoke(who, args);
+                    }
                 }
+                Slog.d(TAG, "Created mock Network object for sandboxed app");
+                return network;
+            } catch (Exception e) {
+                Slog.w(TAG, "Error creating Network object: " + e.getMessage());
+                return method.invoke(who, args);
             }
-            return method.invoke(who, args);
         }
     }
 
-    // Hook for getLinkProperties to handle DNS configuration
+    // Hook for getLinkProperties to handle DNS configuration (Android 10+ always supports this)
     @ProxyMethod("getLinkProperties")
     public static class GetLinkProperties extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            if (android.os.Build.VERSION.SDK_INT >= 21) {
-                try {
-                    // Create LinkProperties using the universal method for all API levels
-                    Object linkProperties = IConnectivityManagerProxy.createLinkProperties();
-                    
-                    if (linkProperties != null) {
-                        Slog.d(TAG, "Created LinkProperties with DNS configuration for sandboxed app");
-                        return linkProperties;
-                    } else {
-                        Slog.w(TAG, "Failed to create LinkProperties, falling back to original method");
-                        return method.invoke(who, args);
-                    }
-                    
-                } catch (Exception e) {
-                    Slog.w(TAG, "Error creating LinkProperties: " + e.getMessage());
+            try {
+                // Create LinkProperties using the universal method
+                Object linkProperties = IConnectivityManagerProxy.createLinkProperties();
+
+                if (linkProperties != null) {
+                    Slog.d(TAG, "Created LinkProperties with DNS configuration for sandboxed app");
+                    return linkProperties;
+                } else {
+                    Slog.w(TAG, "Failed to create LinkProperties, falling back to original method");
                     return method.invoke(who, args);
                 }
+
+            } catch (Exception e) {
+                Slog.w(TAG, "Error creating LinkProperties: " + e.getMessage());
+                return method.invoke(who, args);
             }
-            return method.invoke(who, args);
         }
     }
 
@@ -443,13 +432,11 @@ public class IConnectivityManagerProxy extends BinderInvocationStub {
             try {
                 // Create a mock network request result
                 // This is critical for apps that need to request network access
-                if (android.os.Build.VERSION.SDK_INT >= 21) {
-                    // For API 21+, try to create a NetworkRequest object
-                    Class<?> networkRequestClass = Class.forName("android.net.NetworkRequest");
-                    if (networkRequestClass != null) {
-                        Slog.d(TAG, "Created fallback NetworkRequest for internet access");
-                        return null; // Return null to indicate no specific network request
-                    }
+                // Android 10+ always supports NetworkRequest
+                Class<?> networkRequestClass = Class.forName("android.net.NetworkRequest");
+                if (networkRequestClass != null) {
+                    Slog.d(TAG, "Created fallback NetworkRequest for internet access");
+                    return null; // Return null to indicate no specific network request
                 }
             } catch (Exception e) {
                 Slog.w(TAG, "Could not create NetworkRequest fallback: " + e.getMessage());
@@ -605,34 +592,32 @@ public class IConnectivityManagerProxy extends BinderInvocationStub {
                     return result;
                 }
                 
-                // If original method fails, create a mock Network object
-                if (android.os.Build.VERSION.SDK_INT >= 21) {
+                // If original method fails, create a mock Network object (Android 10+ always supports this)
+                try {
+                    // Use reflection to handle different constructor signatures
+                    android.net.Network network;
                     try {
-                        // Use reflection to handle different constructor signatures
-                        android.net.Network network;
-                        try {
-                            // Try constructor with int parameter first
-                            Constructor<android.net.Network> constructor = android.net.Network.class.getConstructor(int.class);
-                            network = constructor.newInstance(1);
-                        } catch (Exception e) {
-                            // Try to access the default constructor via reflection
-                            try {
-                                Constructor<android.net.Network> defaultConstructor = android.net.Network.class.getDeclaredConstructor();
-                                defaultConstructor.setAccessible(true);
-                                network = defaultConstructor.newInstance();
-                            } catch (Exception e2) {
-                                // If all else fails, return null
-                                Slog.w(TAG, "Could not create Network object, returning null");
-                                return null;
-                            }
-                        }
-                        Slog.d(TAG, "Created fallback Network for type");
-                        return network;
+                        // Try constructor with int parameter first
+                        Constructor<android.net.Network> constructor = android.net.Network.class.getConstructor(int.class);
+                        network = constructor.newInstance(1);
                     } catch (Exception e) {
-                        Slog.w(TAG, "Failed to create fallback Network: " + e.getMessage());
+                        // Try to access the default constructor via reflection
+                        try {
+                            Constructor<android.net.Network> defaultConstructor = android.net.Network.class.getDeclaredConstructor();
+                            defaultConstructor.setAccessible(true);
+                            network = defaultConstructor.newInstance();
+                        } catch (Exception e2) {
+                            // If all else fails, return null
+                            Slog.w(TAG, "Could not create Network object, returning null");
+                            return null;
+                        }
                     }
+                    Slog.d(TAG, "Created fallback Network for type");
+                    return network;
+                } catch (Exception e) {
+                    Slog.w(TAG, "Failed to create fallback Network: " + e.getMessage());
                 }
-                
+
                 return null;
                 
             } catch (Exception e) {

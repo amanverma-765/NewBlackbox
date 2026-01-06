@@ -53,27 +53,26 @@ public class ActivityCompat {
             e.printStackTrace();
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Intent intent = activity.getIntent();
-            ApplicationInfo applicationInfo = baseContext.getApplicationInfo();
-            PackageManager pm = activity.getPackageManager();
-            if (intent != null && activity.isTaskRoot()) {
-                try {
-                    String label = TaskDescriptionCompat.getTaskDescriptionLabel(
-                            BlackBoxCore.getUserId(), applicationInfo.loadLabel(pm));
+        // Task description setup (Android 10+ always supports this)
+        Intent intent = activity.getIntent();
+        ApplicationInfo applicationInfo = baseContext.getApplicationInfo();
+        PackageManager pm = activity.getPackageManager();
+        if (intent != null && activity.isTaskRoot()) {
+            try {
+                String label = TaskDescriptionCompat.getTaskDescriptionLabel(
+                        BlackBoxCore.getUserId(), applicationInfo.loadLabel(pm));
 
-                    Bitmap icon = null;
-                    Drawable drawable = getActivityIcon(activity);
-                    if (drawable != null) {
-                        ActivityManager am = (ActivityManager) baseContext.getSystemService(Context.ACTIVITY_SERVICE);
-                        int iconSize = am.getLauncherLargeIconSize();
-                        icon = DrawableUtils.drawableToBitmap(drawable, iconSize, iconSize);
-                    }
-
-                    activity.setTaskDescription(new ActivityManager.TaskDescription(label, icon));
-                } catch (Throwable e) {
-                    e.printStackTrace();
+                Bitmap icon = null;
+                Drawable drawable = getActivityIcon(activity);
+                if (drawable != null) {
+                    ActivityManager am = (ActivityManager) baseContext.getSystemService(Context.ACTIVITY_SERVICE);
+                    int iconSize = am.getLauncherLargeIconSize();
+                    icon = DrawableUtils.drawableToBitmap(drawable, iconSize, iconSize);
                 }
+
+                activity.setTaskDescription(new ActivityManager.TaskDescription(label, icon));
+            } catch (Throwable e) {
+                e.printStackTrace();
             }
         }
     }

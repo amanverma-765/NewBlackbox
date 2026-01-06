@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import black.android.app.BRIServiceConnectionO;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * updated by alex5402 on 4/2/21.
@@ -61,10 +60,7 @@ public class ServiceConnectionDelegate extends IServiceConnection.Stub {
     }
 
     public void connected(ComponentName name, IBinder service, boolean dead) throws RemoteException {
-        if (BuildCompat.isOreo()) {
-            BRIServiceConnectionO.get(mConn).connected(mComponentName, service, dead);
-        } else {
-            mConn.connected(name, service);
-        }
+        // Always use Oreo+ API on API 29+
+        BRIServiceConnectionO.get(mConn).connected(mComponentName, service, dead);
     }
 }

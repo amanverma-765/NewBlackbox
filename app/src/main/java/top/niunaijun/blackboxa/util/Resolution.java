@@ -99,17 +99,11 @@ public class Resolution {
             android.graphics.Rect bounds = windowMetrics.getBounds();
             ret.x = bounds.width();
             ret.y = bounds.height();
-        } else if (Build.VERSION.SDK_INT >= 13) {
-            // Use getSize for Android 3.0+
+        } else {
+            // Use getSize for Android 10 (API 29)
             @SuppressWarnings("deprecation")
             final Display defaultDisplay = wm.getDefaultDisplay();
             defaultDisplay.getSize(ret);
-        } else {
-            // Fallback for older versions
-            @SuppressWarnings("deprecation")
-            final Display defaultDisplay = wm.getDefaultDisplay();
-            ret.x = defaultDisplay.getWidth();
-            ret.y = defaultDisplay.getHeight();
         }
         return ret;
     }
@@ -161,16 +155,12 @@ public class Resolution {
     }
 
     /**
-     * 检查分辨率是否为本机
+     * 检查分辨率是否为本机 (Android 10+ always supports getRealMetrics)
      */
     public static boolean checkPix(Activity context, int width, int height) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-            DisplayMetrics metrics = new DisplayMetrics();
-            context.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-            return metrics.widthPixels == width && metrics.heightPixels == height;
-        } else {
-            return getScreenPixWidth(context) == width && getScreenPixHeight(context) == height;
-        }
+        DisplayMetrics metrics = new DisplayMetrics();
+        context.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+        return metrics.widthPixels == width && metrics.heightPixels == height;
     }
 
     /**
@@ -311,20 +301,11 @@ public class Resolution {
             android.graphics.Rect bounds = windowMetrics.getBounds();
             size.x = bounds.width();
             size.y = bounds.height();
-        } else if (Build.VERSION.SDK_INT >= 17) {
-            // Use getRealSize for Android 4.2+
+        } else {
+            // Use getRealSize for Android 10 (API 29)
             @SuppressWarnings("deprecation")
             Display display = windowManager.getDefaultDisplay();
             display.getRealSize(size);
-        } else if (Build.VERSION.SDK_INT >= 14) {
-            // Fallback for older versions
-            @SuppressWarnings("deprecation")
-            Display display = windowManager.getDefaultDisplay();
-            try {
-                size.x = (Integer) Display.class.getMethod("getRawWidth").invoke(display);
-                size.y = (Integer) Display.class.getMethod("getRawHeight").invoke(display);
-            } catch (Exception e) {
-            }
         }
 
         return size;

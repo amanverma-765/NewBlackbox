@@ -75,37 +75,29 @@ public class ProxyVpnService extends VpnService {
     }
 
     /**
-     * Create notification channel for Android 8.0+
+     * Create notification channel (required for Android 8.0+, always runs on Android 10+)
      */
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID,
-                "BlackBox VPN Service",
-                NotificationManager.IMPORTANCE_LOW
-            );
-            channel.setDescription("VPN service for BlackBox network access");
-            channel.setShowBadge(false);
-            
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            if (notificationManager != null) {
-                notificationManager.createNotificationChannel(channel);
-            }
+        NotificationChannel channel = new NotificationChannel(
+            CHANNEL_ID,
+            "BlackBox VPN Service",
+            NotificationManager.IMPORTANCE_LOW
+        );
+        channel.setDescription("VPN service for BlackBox network access");
+        channel.setShowBadge(false);
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (notificationManager != null) {
+            notificationManager.createNotificationChannel(channel);
         }
     }
 
     /**
-     * Create notification for foreground service
+     * Create notification for foreground service (Android 10+ always uses channel)
      */
     private Notification createNotification() {
-        Notification.Builder builder;
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder = new Notification.Builder(this, CHANNEL_ID);
-        } else {
-            builder = new Notification.Builder(this);
-        }
-        
+        Notification.Builder builder = new Notification.Builder(this, CHANNEL_ID);
+
         return builder
             .setContentTitle("BlackBox VPN Active")
             .setContentText("Managing network access for sandboxed apps")

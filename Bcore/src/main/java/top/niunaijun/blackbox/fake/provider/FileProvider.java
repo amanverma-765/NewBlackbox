@@ -349,8 +349,8 @@ public class FileProvider extends ContentProvider {
                     if (externalCacheDirs.length > 0) {
                         target = externalCacheDirs[0];
                     }
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                        && TAG_EXTERNAL_MEDIA.equals(tag)) {
+                } else if (TAG_EXTERNAL_MEDIA.equals(tag)) {
+                    // Android 10+ always supports getExternalMediaDirs (API 21+)
                     File[] externalMediaDirs = context.getExternalMediaDirs();
                     if (externalMediaDirs.length > 0) {
                         target = externalMediaDirs[0];

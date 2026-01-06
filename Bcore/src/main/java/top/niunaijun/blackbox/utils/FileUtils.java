@@ -91,34 +91,11 @@ public class FileUtils {
      * @param mode {@link FileMode}
      */
     public static void chmod(String path, int mode) throws Exception {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                Os.chmod(path, mode);
-                return;
-            } catch (Exception e) {
-                // ignore
-            }
-        }
-
-        File file = new File(path);
-        String cmd = "chmod ";
-        if (file.isDirectory()) {
-            cmd += " -R ";
-        }
-        String cmode = String.format("%o", mode);
-        Runtime.getRuntime().exec(cmd + cmode + " " + path).waitFor();
+        Os.chmod(path, mode);
     }
 
     public static void createSymlink(String oldPath, String newPath) throws Exception {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                Os.link(oldPath, newPath);
-                return;
-            } catch (Throwable e) {
-                //ignore
-            }
-        }
-        Runtime.getRuntime().exec("ln -s " + oldPath + " " + newPath).waitFor();
+        Os.symlink(oldPath, newPath);
     }
 
     public static boolean isSymlink(File file) throws IOException {

@@ -208,15 +208,14 @@ public class PackageManagerCompat {
                 pi.signatures = base.signatures;
             }
         }
-        if (BuildCompat.isPie()) {
-            if ((flags & PackageManager.GET_SIGNING_CERTIFICATES) != 0) {
-                if (base == null) {
-                    PackageParser.SigningDetails signingDetails = PackageParser.SigningDetails.UNKNOWN;
-                    BRPackageParserSigningDetails.get(signingDetails)._set_signatures(p.mSigningDetails.signatures);
-                    pi.signingInfo = BRSigningInfo.get()._new(signingDetails);
-                } else {
-                    pi.signingInfo = base.signingInfo;
-                }
+        // Always use Pie+ signing certificates API on API 29+
+        if ((flags & PackageManager.GET_SIGNING_CERTIFICATES) != 0) {
+            if (base == null) {
+                PackageParser.SigningDetails signingDetails = PackageParser.SigningDetails.UNKNOWN;
+                BRPackageParserSigningDetails.get(signingDetails)._set_signatures(p.mSigningDetails.signatures);
+                pi.signingInfo = BRSigningInfo.get()._new(signingDetails);
+            } else {
+                pi.signingInfo = base.signingInfo;
             }
         }
         return pi;
@@ -314,26 +313,25 @@ public class PackageManagerCompat {
         ai.uid = p.mExtras.appId;
 //        ai.uid = baseApplication.uid;
 
-        if (BuildCompat.isL()) {
-            BRApplicationInfoL.get(ai)._set_primaryCpuAbi(Build.CPU_ABI);
-            BRApplicationInfoL.get(ai)._set_scanPublicSourceDir(BRApplicationInfoL.get(baseApplication).scanPublicSourceDir());
-            BRApplicationInfoL.get(ai)._set_scanSourceDir(BRApplicationInfoL.get(baseApplication).scanSourceDir());
-        }
-        if (BuildCompat.isN()) {
-            ai.deviceProtectedDataDir = BEnvironment.getDeDataDir(p.packageName, userId).getAbsolutePath();
+        // Always set L+ ApplicationInfo fields on API 29+
+        BRApplicationInfoL.get(ai)._set_primaryCpuAbi(Build.CPU_ABI);
+        BRApplicationInfoL.get(ai)._set_scanPublicSourceDir(BRApplicationInfoL.get(baseApplication).scanPublicSourceDir());
+        BRApplicationInfoL.get(ai)._set_scanSourceDir(BRApplicationInfoL.get(baseApplication).scanSourceDir());
 
-            if (BRApplicationInfoN.get(ai)._check_deviceEncryptedDataDir() != null) {
-                BRApplicationInfoN.get(ai)._set_deviceEncryptedDataDir(ai.deviceProtectedDataDir);
-            }
-            if (BRApplicationInfoN.get(ai)._check_credentialEncryptedDataDir() != null) {
-                BRApplicationInfoN.get(ai)._set_credentialEncryptedDataDir(ai.dataDir);
-            }
-            if (BRApplicationInfoN.get(ai)._check_deviceProtectedDataDir() != null) {
-                BRApplicationInfoN.get(ai)._set_deviceProtectedDataDir(ai.deviceProtectedDataDir);
-            }
-            if (BRApplicationInfoN.get(ai)._check_credentialProtectedDataDir() != null) {
-                BRApplicationInfoN.get(ai)._set_credentialProtectedDataDir(ai.dataDir);
-            }
+        // Always set N+ ApplicationInfo fields on API 29+
+        ai.deviceProtectedDataDir = BEnvironment.getDeDataDir(p.packageName, userId).getAbsolutePath();
+
+        if (BRApplicationInfoN.get(ai)._check_deviceEncryptedDataDir() != null) {
+            BRApplicationInfoN.get(ai)._set_deviceEncryptedDataDir(ai.deviceProtectedDataDir);
+        }
+        if (BRApplicationInfoN.get(ai)._check_credentialEncryptedDataDir() != null) {
+            BRApplicationInfoN.get(ai)._set_credentialEncryptedDataDir(ai.dataDir);
+        }
+        if (BRApplicationInfoN.get(ai)._check_deviceProtectedDataDir() != null) {
+            BRApplicationInfoN.get(ai)._set_deviceProtectedDataDir(ai.deviceProtectedDataDir);
+        }
+        if (BRApplicationInfoN.get(ai)._check_credentialProtectedDataDir() != null) {
+            BRApplicationInfoN.get(ai)._set_credentialProtectedDataDir(ai.dataDir);
         }
         fixJar(ai);
         return ai;

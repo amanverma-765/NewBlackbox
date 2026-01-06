@@ -5,7 +5,6 @@ import black.android.hardware.location.BRIContextHubServiceStub;
 import black.android.os.BRServiceManager;
 import top.niunaijun.blackbox.fake.hook.BinderInvocationStub;
 import top.niunaijun.blackbox.fake.service.base.ValueMethodProxy;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * Created by BlackBox on 2022/3/2.
@@ -17,7 +16,8 @@ public class IContextHubServiceProxy extends BinderInvocationStub {
     }
 
     private static String getServiceName() {
-        return BuildCompat.isOreo() ? "contexthub" : "contexthub_service";
+        // Always use "contexthub" on API 29+ (Oreo+ name)
+        return "contexthub";
     }
 
     @Override

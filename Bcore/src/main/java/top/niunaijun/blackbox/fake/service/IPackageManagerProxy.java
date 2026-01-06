@@ -316,13 +316,9 @@ public class IPackageManagerProxy extends BinderInvocationStub {
             List<ResolveInfo> resolves = BlackBoxCore.getBPackageManager().queryBroadcastReceivers(intent, flags, type, BActivityThread.getUserId());
             Slog.d(TAG, "queryIntentReceivers: " + resolves);
 
+            // Always use ParceledListSlice on API 29+ (N+ behavior)
             // http://androidxref.com/7.0.0_r1/xref/frameworks/base/core/java/android/app/ApplicationPackageManager.java#872
-            if (BuildCompat.isN()) {
-                return ParceledListSliceCompat.create(resolves);
-            }
-
-            // http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ApplicationPackageManager.java#699
-            return resolves;
+            return ParceledListSliceCompat.create(resolves);
         }
     }
 

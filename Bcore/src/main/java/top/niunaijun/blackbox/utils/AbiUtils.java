@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import top.niunaijun.blackbox.BlackBoxCore;
-
 /**
  * updated by alex5402 on 3/2/21.
  * * ∧＿∧
@@ -18,26 +16,25 @@ import top.niunaijun.blackbox.BlackBoxCore;
  * 丶　つ０
  * しーＪ
  * TFNQw5HgWUS33Ke1eNmSFTwoQySGU7XNsK (USDT TRC20)
+ *
+ * Simplified for ARM64-only support (API 29+)
  */
 public class AbiUtils {
     private final Set<String> mLibs = new HashSet<>();
     private static final Map<File, AbiUtils> sAbiUtilsMap = new HashMap<>();
 
+    /**
+     * Check if APK is supported (ARM64-only)
+     * App is supported if it has arm64-v8a libs or no native libs at all
+     */
     public static boolean isSupport(File apkFile) {
         AbiUtils abiUtils = sAbiUtilsMap.get(apkFile);
         if (abiUtils == null) {
             abiUtils = new AbiUtils(apkFile);
             sAbiUtilsMap.put(apkFile, abiUtils);
         }
-        if (abiUtils.isEmptyAib()) {
-            return true;
-        }
-
-        if (BlackBoxCore.is64Bit()) {
-            return abiUtils.is64Bit();
-        } else {
-            return abiUtils.is32Bit();
-        }
+        // ARM64-only: app is supported if it has arm64 libs or no native libs
+        return abiUtils.isEmptyAbi() || abiUtils.is64Bit();
     }
 
     public AbiUtils(File apkFile) {
@@ -48,12 +45,9 @@ public class AbiUtils {
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
                 String name = zipEntry.getName();
+                // Only detect ARM64 libraries
                 if (name.startsWith("lib/arm64-v8a")) {
                     mLibs.add("arm64-v8a");
-                } else if (name.startsWith("lib/armeabi")) {
-                    mLibs.add("armeabi");
-                } else if (name.startsWith("lib/armeabi-v7a")) {
-                    mLibs.add("armeabi-v7a");
                 }
             }
         } catch (Exception e) {
@@ -67,11 +61,7 @@ public class AbiUtils {
         return mLibs.contains("arm64-v8a");
     }
 
-    public boolean is32Bit() {
-        return mLibs.contains("armeabi") || mLibs.contains("armeabi-v7a");
-    }
-
-    public boolean isEmptyAib() {
+    public boolean isEmptyAbi() {
         return mLibs.isEmpty();
     }
 }

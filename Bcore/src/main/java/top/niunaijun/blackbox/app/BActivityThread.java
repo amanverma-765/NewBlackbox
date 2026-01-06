@@ -392,14 +392,12 @@ public class BActivityThread extends IBActivityThread.Stub {
             StrictMode.ThreadPolicy newPolicy = new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy()).permitNetwork().build();
             StrictMode.setThreadPolicy(newPolicy);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (targetSdkVersion < Build.VERSION_CODES.N) {
-                StrictModeCompat.disableDeathOnFileUriExposure();
-            }
+        // Disable FileUriExposure death for apps targeting < N (always available on API 29+)
+        if (targetSdkVersion < Build.VERSION_CODES.N) {
+            StrictModeCompat.disableDeathOnFileUriExposure();
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            WebView.setDataDirectorySuffix(getUserId() + ":" + packageName + ":" + processName);
-        }
+        // Set WebView data directory suffix (always available on API 29+)
+        WebView.setDataDirectorySuffix(getUserId() + ":" + packageName + ":" + processName);
 
         VirtualRuntime.setupRuntime(processName, applicationInfo);
 
@@ -1159,12 +1157,8 @@ public class BActivityThread extends IBActivityThread.Stub {
     @Override
     public void handleNewIntent(final IBinder token, final Intent intent) {
         mH.post(() -> {
-            Intent newIntent;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                newIntent = BRReferrerIntent.get()._new(intent, BlackBoxCore.getHostPkg());
-            } else {
-                newIntent = intent;
-            }
+            // Always use ReferrerIntent (API 22+, always available on API 29+)
+            Intent newIntent = BRReferrerIntent.get()._new(intent, BlackBoxCore.getHostPkg());
             Object mainThread = BlackBoxCore.mainThread();
             if (BRActivityThread.get(BlackBoxCore.mainThread())._check_performNewIntents(null, null) != null) {
                 BRActivityThread.get(mainThread).performNewIntents(

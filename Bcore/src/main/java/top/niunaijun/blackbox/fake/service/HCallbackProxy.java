@@ -78,19 +78,11 @@ public class HCallbackProxy implements IInjectHook, Handler.Callback {
     public boolean handleMessage(@NonNull Message msg) {
         if (!mBeing.getAndSet(true)) {
             try {
-                if (BuildCompat.isPie()) {
-                    if (msg.what == BRActivityThreadH.get().EXECUTE_TRANSACTION()) {
-                        if (handleLaunchActivity(msg.obj)) {
-                            getH().sendMessageAtFrontOfQueue(Message.obtain(msg));
-                            return true;
-                        }
-                    }
-                } else {
-                    if (msg.what == BRActivityThreadH.get().LAUNCH_ACTIVITY()) {
-                        if (handleLaunchActivity(msg.obj)) {
-                            getH().sendMessageAtFrontOfQueue(Message.obtain(msg));
-                            return true;
-                        }
+                // Always use EXECUTE_TRANSACTION on API 29+ (Pie+ path)
+                if (msg.what == BRActivityThreadH.get().EXECUTE_TRANSACTION()) {
+                    if (handleLaunchActivity(msg.obj)) {
+                        getH().sendMessageAtFrontOfQueue(Message.obtain(msg));
+                        return true;
                     }
                 }
                 if (msg.what == BRActivityThreadH.get().CREATE_SERVICE()) {
@@ -124,27 +116,14 @@ public class HCallbackProxy implements IInjectHook, Handler.Callback {
     }
 
     private boolean handleLaunchActivity(Object client) {
-        Object r;
-        if (BuildCompat.isPie()) {
-            // ClientTransaction
-            r = getLaunchActivityItem(client);
-        } else {
-            // ActivityClientRecord
-            r = client;
-        }
+        // Always use ClientTransaction on API 29+ (Pie+ path)
+        Object r = getLaunchActivityItem(client);
         if (r == null)
             return false;
 
-        Intent intent;
-        IBinder token;
-        if (BuildCompat.isPie()) {
-            intent = BRLaunchActivityItem.get(r).mIntent();
-            token = BRClientTransaction.get(client).mActivityToken();
-        } else {
-            ActivityThreadActivityClientRecordContext clientRecordContext = BRActivityThreadActivityClientRecord.get(r);
-            intent = clientRecordContext.intent();
-            token = clientRecordContext.token();
-        }
+        // Always use Pie+ API
+        Intent intent = BRLaunchActivityItem.get(r).mIntent();
+        IBinder token = BRClientTransaction.get(client).mActivityToken();
 
         if (intent == null)
             return false;
@@ -158,15 +137,10 @@ public class HCallbackProxy implements IInjectHook, Handler.Callback {
                 Intent launchIntentForPackage = BlackBoxCore.getBPackageManager().getLaunchIntentForPackage(activityInfo.packageName, stubRecord.mUserId);
                 intent.setExtrasClassLoader(this.getClass().getClassLoader());
                 ProxyActivityRecord.saveStub(intent, launchIntentForPackage, stubRecord.mActivityInfo, stubRecord.mActivityRecord, stubRecord.mUserId);
-                if (BuildCompat.isPie()) {
-                    LaunchActivityItemContext launchActivityItemContext = BRLaunchActivityItem.get(r);
-                    launchActivityItemContext._set_mIntent(intent);
-                    launchActivityItemContext._set_mInfo(activityInfo);
-                } else {
-                    ActivityThreadActivityClientRecordContext clientRecordContext = BRActivityThreadActivityClientRecord.get(r);
-                    clientRecordContext._set_intent(intent);
-                    clientRecordContext._set_activityInfo(activityInfo);
-                }
+                // Always use Pie+ API on API 29+
+                LaunchActivityItemContext launchActivityItemContext = BRLaunchActivityItem.get(r);
+                launchActivityItemContext._set_mIntent(intent);
+                launchActivityItemContext._set_mInfo(activityInfo);
                 return true;
             }
             // bind
@@ -179,11 +153,13 @@ public class HCallbackProxy implements IInjectHook, Handler.Callback {
             int taskId = BRIActivityManager.get(BRActivityManagerNative.get().getDefault()).getTaskForActivity(token, false);
             BlackBoxCore.getBActivityManager().onActivityCreated(taskId, token, stubRecord.mActivityRecord);
 
-            if(BuildCompat.isTiramisu()){//处理跟isPie一样流程
+            if(BuildCompat.isTiramisu()){
+                // Android 13+ (Tiramisu): Use LaunchActivityItem path
                 LaunchActivityItemContext launchActivityItemContext = BRLaunchActivityItem.get(r);
                 launchActivityItemContext._set_mIntent(stubRecord.mTarget);
                 launchActivityItemContext._set_mInfo(activityInfo);
             } else if (BuildCompat.isS()) {
+                // Android 12 (S): Use getLaunchingActivity path
                 Object record = BRActivityThread.get(BlackBoxCore.mainThread()).getLaunchingActivity(token);
                 ActivityThreadActivityClientRecordContext clientRecordContext = BRActivityThreadActivityClientRecord.get(record);
                 clientRecordContext._set_intent(stubRecord.mTarget);
@@ -191,14 +167,11 @@ public class HCallbackProxy implements IInjectHook, Handler.Callback {
                 clientRecordContext._set_packageInfo(BActivityThread.currentActivityThread().getPackageInfo());
 
                 checkActivityClient();
-            } else if (BuildCompat.isPie()) {
+            } else {
+                // Android 10-11 (Q/R): Use LaunchActivityItem path (same as Tiramisu)
                 LaunchActivityItemContext launchActivityItemContext = BRLaunchActivityItem.get(r);
                 launchActivityItemContext._set_mIntent(stubRecord.mTarget);
                 launchActivityItemContext._set_mInfo(activityInfo);
-            } else {
-                ActivityThreadActivityClientRecordContext clientRecordContext = BRActivityThreadActivityClientRecord.get(r);
-                clientRecordContext._set_intent(stubRecord.mTarget);
-                clientRecordContext._set_activityInfo(activityInfo);
             }
         }
         return false;

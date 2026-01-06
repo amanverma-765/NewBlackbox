@@ -24,9 +24,8 @@ public class NotificationChannelManager {
     }
 
     public NotificationChannelManager() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerAppChannel();
-        }
+        // Android 10+ always supports notification channels (API 26+)
+        registerAppChannel();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

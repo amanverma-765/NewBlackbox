@@ -11,7 +11,6 @@ import top.niunaijun.blackbox.fake.hook.BinderInvocationStub;
 import top.niunaijun.blackbox.fake.service.base.PkgMethodProxy;
 import top.niunaijun.blackbox.fake.service.base.ValueMethodProxy;
 import top.niunaijun.blackbox.utils.Reflector;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * Created by BlackBox on 2022/3/2.
@@ -49,12 +48,11 @@ public class IPermissionManagerProxy extends BinderInvocationStub {
         addMethodHook(new ValueMethodProxy("removeOnPermissionsChangeListener", 0));
         addMethodHook(new ValueMethodProxy("checkDeviceIdentifierAccess", false));
         addMethodHook(new PkgMethodProxy("shouldShowRequestPermissionRationale"));
-        if (BuildCompat.isOreo()) {
-            addMethodHook(new ValueMethodProxy("notifyDexLoad", 0));
-            addMethodHook(new ValueMethodProxy("notifyPackageUse", 0));
-            addMethodHook(new ValueMethodProxy("setInstantAppCookie", false));
-            addMethodHook(new ValueMethodProxy("isInstantApp", false));
-        }
+        // Always add Oreo+ method hooks on API 29+
+        addMethodHook(new ValueMethodProxy("notifyDexLoad", 0));
+        addMethodHook(new ValueMethodProxy("notifyPackageUse", 0));
+        addMethodHook(new ValueMethodProxy("setInstantAppCookie", false));
+        addMethodHook(new ValueMethodProxy("isInstantApp", false));
     }
 
     @Override

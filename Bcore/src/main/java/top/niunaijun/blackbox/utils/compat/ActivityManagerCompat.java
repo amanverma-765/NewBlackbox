@@ -75,14 +75,9 @@ public class ActivityManagerCompat {
 	public static final int START_FLAG_NATIVE_DEBUGGING = 1<<3;
 
 	public static boolean finishActivity(IBinder token, int code, Intent data) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			return BRIActivityManagerN.get(BRActivityManagerNative.get().getDefault()).finishActivity(
-					token, code, data, 0);
-		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			return BRIActivityManagerL.get(BRActivityManagerNative.get().getDefault()).finishActivity(
-						token, code, data, false);
-		}
-		return false;
+		// Android 10+ always uses N (API 24+) path
+		return BRIActivityManagerN.get(BRActivityManagerNative.get().getDefault()).finishActivity(
+				token, code, data, 0);
 	}
 
 

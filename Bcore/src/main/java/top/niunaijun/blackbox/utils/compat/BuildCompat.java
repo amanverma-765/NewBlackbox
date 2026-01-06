@@ -2,72 +2,73 @@ package top.niunaijun.blackbox.utils.compat;
 
 import android.os.Build;
 
+/**
+ * Build compatibility utilities.
+ * Simplified for Android 10+ (API 29+).
+ */
 public class BuildCompat {
 
     public static int getPreviewSDKInt() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
-                return Build.VERSION.PREVIEW_SDK_INT;
-            } catch (Throwable e) {
-                // ignore
-            }
+        try {
+            return Build.VERSION.PREVIEW_SDK_INT;
+        } catch (Throwable e) {
+            return 0;
         }
-        return 0;
     }
 
-    // 14
+    // Android 14 (API 34)
     public static boolean isU() {
+        return Build.VERSION.SDK_INT >= 34 || (Build.VERSION.SDK_INT >= 33 && Build.VERSION.PREVIEW_SDK_INT == 1);
+    }
+
+    // Android 13 (API 33)
+    public static boolean isTiramisu() {
         return Build.VERSION.SDK_INT >= 33 || (Build.VERSION.SDK_INT >= 32 && Build.VERSION.PREVIEW_SDK_INT == 1);
     }
 
-    // 13
-    public static boolean isTiramisu() {
-        return Build.VERSION.SDK_INT >= 32 || (Build.VERSION.SDK_INT >= 31 && Build.VERSION.PREVIEW_SDK_INT == 1);
-    }
-
-    // 12
+    // Android 12 (API 31)
     public static boolean isS() {
         return Build.VERSION.SDK_INT >= 31 || (Build.VERSION.SDK_INT >= 30 && Build.VERSION.PREVIEW_SDK_INT == 1);
     }
 
-    // 11
+    // Android 11 (API 30)
     public static boolean isR() {
         return Build.VERSION.SDK_INT >= 30 || (Build.VERSION.SDK_INT >= 29 && Build.VERSION.PREVIEW_SDK_INT == 1);
     }
 
-    // 10
+    // Android 10 (API 29) - baseline, always true
     public static boolean isQ() {
-        return Build.VERSION.SDK_INT >= 29 || (Build.VERSION.SDK_INT >= 28 && Build.VERSION.PREVIEW_SDK_INT == 1);
+        return true;
     }
 
-    // 9
+    // Android 9 (API 28) - always true on Android 10+
     public static boolean isPie() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || (Build.VERSION.SDK_INT >= 27 && Build.VERSION.PREVIEW_SDK_INT == 1);
+        return true;
     }
 
-    // 8
+    // Android 8 (API 26) - always true on Android 10+
     public static boolean isOreo() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || (Build.VERSION.SDK_INT >= 25 && Build.VERSION.PREVIEW_SDK_INT == 1);
+        return true;
     }
 
-    // 7.1
+    // Android 7.1 (API 25) - always true on Android 10+
     public static boolean isN_MR1() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 || (Build.VERSION.SDK_INT >= 24 && Build.VERSION.PREVIEW_SDK_INT == 1);
+        return true;
     }
 
-    // 7
+    // Android 7 (API 24) - always true on Android 10+
     public static boolean isN() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N || (Build.VERSION.SDK_INT >= 23 && Build.VERSION.PREVIEW_SDK_INT == 1);
+        return true;
     }
 
-    // 6
+    // Android 6 (API 23) - always true on Android 10+
     public static boolean isM() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        return true;
     }
 
-    // 5
+    // Android 5 (API 21) - always true on Android 10+
     public static boolean isL() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+        return true;
     }
 
     public static boolean isSamsung() {

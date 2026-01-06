@@ -20,7 +20,6 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 
 import top.niunaijun.blackbox.entity.pm.InstallOption;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * updated by alex5402 on 4/21/21.
@@ -124,12 +123,9 @@ public class BPackage implements Parcelable {
         }
 
         this.requestedPermissions = aPackage.requestedPermissions;
-        if (BuildCompat.isPie()) {
-            this.mSigningDetails = new SigningDetails(aPackage.mSigningDetails);
-            this.mSignatures = this.mSigningDetails.signatures;
-        } else {
-            this.mSignatures = aPackage.mSignatures;
-        }
+        // Always use Pie+ SigningDetails API on API 29+
+        this.mSigningDetails = new SigningDetails(aPackage.mSigningDetails);
+        this.mSignatures = this.mSigningDetails.signatures;
         this.mAppMetaData = aPackage.mAppMetaData;
         // this.mExtras = new BPackageSettings((PackageSetting) aPackage.mExtras);
         this.packageName = aPackage.packageName;
@@ -216,9 +212,8 @@ public class BPackage implements Parcelable {
         }
 
         in.readStringList(this.requestedPermissions);
-        if (BuildCompat.isPie()) {
-            this.mSigningDetails = in.readParcelable(SigningDetails.class.getClassLoader());
-        }
+        // Always use Pie+ SigningDetails API on API 29+
+        this.mSigningDetails = in.readParcelable(SigningDetails.class.getClassLoader());
         this.mSignatures = in.createTypedArray(Signature.CREATOR);
         this.mAppMetaData = in.readBundle(Bundle.class.getClassLoader());
 //        this.mExtras = in.readParcelable(BPackageSettings.class.getClassLoader());
@@ -706,9 +701,8 @@ public class BPackage implements Parcelable {
         }
 
         dest.writeStringList(this.requestedPermissions);
-        if (BuildCompat.isPie()) {
-            dest.writeParcelable(this.mSigningDetails, flags);
-        }
+        // Always use Pie+ SigningDetails API on API 29+
+        dest.writeParcelable(this.mSigningDetails, flags);
         dest.writeTypedArray(this.mSignatures, flags);
         dest.writeBundle(this.mAppMetaData);
 //        dest.writeParcelable(this.mExtras, flags);

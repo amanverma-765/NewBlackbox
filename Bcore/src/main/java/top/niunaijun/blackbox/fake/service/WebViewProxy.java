@@ -108,9 +108,8 @@ public class WebViewProxy extends ClassInvocationStub {
                     // Set cache mode
                     settings.setCacheMode(WebSettings.LOAD_DEFAULT);
                     // Enable mixed content (for HTTPS sites with HTTP resources)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-                    }
+                    // Android 10+ always supports setMixedContentMode (API 21+)
+                    settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
                     // Set user agent
                     String userAgent = settings.getUserAgentString();
                     if (userAgent != null && !userAgent.contains("BlackBox")) {

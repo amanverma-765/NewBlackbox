@@ -84,27 +84,24 @@ public class IDnsResolverProxy extends BinderInvocationStub {
         }
     }
 
-    // Hook for private DNS configuration (API 28+)
+    // Hook for private DNS configuration (always available on API 29+)
     @ProxyMethod("setPrivateDnsConfiguration")
     public static class SetPrivateDnsConfiguration extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            if (Build.VERSION.SDK_INT >= 28) {
-                Slog.d(TAG, "Intercepting private DNS configuration");
-                // Disable private DNS for sandboxed apps
-                try {
-                    // Try to call with disabled configuration
-                    if (args != null && args.length > 0) {
-                        // Set private DNS to disabled
-                        Slog.d(TAG, "Disabling private DNS for sandboxed app");
-                    }
-                    return method.invoke(who, args);
-                } catch (Exception e) {
-                    Slog.w(TAG, "Private DNS configuration failed: " + e.getMessage());
-                    return null;
+            Slog.d(TAG, "Intercepting private DNS configuration");
+            // Disable private DNS for sandboxed apps
+            try {
+                // Try to call with disabled configuration
+                if (args != null && args.length > 0) {
+                    // Set private DNS to disabled
+                    Slog.d(TAG, "Disabling private DNS for sandboxed app");
                 }
+                return method.invoke(who, args);
+            } catch (Exception e) {
+                Slog.w(TAG, "Private DNS configuration failed: " + e.getMessage());
+                return null;
             }
-            return null;
         }
     }
 
@@ -137,46 +134,40 @@ public class IDnsResolverProxy extends BinderInvocationStub {
         }
     }
 
-    // Hook for DNS query timeout (API 21+)
+    // Hook for DNS query timeout (Android 10+ always supports this)
     @ProxyMethod("setDnsQueryTimeout")
     public static class SetDnsQueryTimeout extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            if (Build.VERSION.SDK_INT >= 21) {
-                Slog.d(TAG, "Intercepting DNS query timeout configuration");
-                try {
-                    // Set a reasonable timeout for DNS queries
-                    if (args != null && args.length > 0 && args[0] instanceof Integer) {
-                        int timeout = Math.min((Integer) args[0], 10000); // Max 10 seconds
-                        Slog.d(TAG, "Setting DNS query timeout to: " + timeout + "ms");
-                        args[0] = timeout;
-                    }
-                    return method.invoke(who, args);
-                } catch (Exception e) {
-                    Slog.w(TAG, "DNS query timeout configuration failed: " + e.getMessage());
-                    return null;
+            Slog.d(TAG, "Intercepting DNS query timeout configuration");
+            try {
+                // Set a reasonable timeout for DNS queries
+                if (args != null && args.length > 0 && args[0] instanceof Integer) {
+                    int timeout = Math.min((Integer) args[0], 10000); // Max 10 seconds
+                    Slog.d(TAG, "Setting DNS query timeout to: " + timeout + "ms");
+                    args[0] = timeout;
                 }
+                return method.invoke(who, args);
+            } catch (Exception e) {
+                Slog.w(TAG, "DNS query timeout configuration failed: " + e.getMessage());
+                return null;
             }
-            return null;
         }
     }
 
-    // Hook for DNS resolver stats (API 23+)
+    // Hook for DNS resolver stats (Android 10+ always supports this)
     @ProxyMethod("getDnsResolverStats")
     public static class GetDnsResolverStats extends MethodHook {
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
-            if (Build.VERSION.SDK_INT >= 23) {
-                Slog.d(TAG, "Intercepting DNS resolver stats request");
-                try {
-                    // Return empty stats to prevent crashes
-                    return method.invoke(who, args);
-                } catch (Exception e) {
-                    Slog.w(TAG, "DNS resolver stats failed: " + e.getMessage());
-                    return null;
-                }
+            Slog.d(TAG, "Intercepting DNS resolver stats request");
+            try {
+                // Return empty stats to prevent crashes
+                return method.invoke(who, args);
+            } catch (Exception e) {
+                Slog.w(TAG, "DNS resolver stats failed: " + e.getMessage());
+                return null;
             }
-            return null;
         }
     }
 }

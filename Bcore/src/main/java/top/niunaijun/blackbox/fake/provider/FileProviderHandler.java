@@ -9,7 +9,6 @@ import java.util.List;
 
 import top.niunaijun.blackbox.BlackBoxCore;
 import top.niunaijun.blackbox.app.BActivityThread;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * updated by alex5402 on 4/18/21.
@@ -22,13 +21,11 @@ import top.niunaijun.blackbox.utils.compat.BuildCompat;
 public class FileProviderHandler {
 
     public static Uri convertFileUri(Context context, Uri uri) {
-        if (BuildCompat.isN()) {
-            File file = convertFile(context, uri);
-            if (file == null)
-                return null;
-            return BlackBoxCore.getBStorageManager().getUriForFile(file.getAbsolutePath());
-        }
-        return uri;
+        // Always use file provider conversion on API 29+ (N+ behavior)
+        File file = convertFile(context, uri);
+        if (file == null)
+            return null;
+        return BlackBoxCore.getBStorageManager().getUriForFile(file.getAbsolutePath());
     }
 
     public static File convertFile(Context context, Uri uri) {

@@ -6,14 +6,12 @@ import android.os.storage.StorageVolume;
 import java.lang.reflect.Method;
 
 import black.android.os.BRServiceManager;
-import black.android.os.mount.BRIMountServiceStub;
 import black.android.os.storage.BRIStorageManagerStub;
 import top.niunaijun.blackbox.BlackBoxCore;
 import top.niunaijun.blackbox.app.BActivityThread;
 import top.niunaijun.blackbox.fake.hook.BinderInvocationStub;
 import top.niunaijun.blackbox.fake.hook.MethodHook;
 import top.niunaijun.blackbox.fake.hook.ProxyMethod;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * updated by alex5402 on 4/10/21.
@@ -31,13 +29,8 @@ public class IStorageManagerProxy extends BinderInvocationStub {
 
     @Override
     protected Object getWho() {
-        IInterface mount;
-        if (BuildCompat.isOreo()) {
-            mount = BRIStorageManagerStub.get().asInterface(BRServiceManager.get().getService("mount"));
-        } else {
-            mount = BRIMountServiceStub.get().asInterface(BRServiceManager.get().getService("mount"));
-        }
-        return mount;
+        // Always use Oreo+ IStorageManager on API 29+
+        return BRIStorageManagerStub.get().asInterface(BRServiceManager.get().getService("mount"));
     }
 
     @Override

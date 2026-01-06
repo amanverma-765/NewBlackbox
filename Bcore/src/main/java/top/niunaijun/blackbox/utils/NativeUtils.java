@@ -32,11 +32,8 @@ public class NativeUtils {
             nativeLibDir.mkdirs();
         }
         try (ZipFile zipfile = new ZipFile(apk.getAbsolutePath())) {
-            if (findAndCopyNativeLib(zipfile, Build.CPU_ABI, nativeLibDir)) {
-                return;
-            }
-
-            findAndCopyNativeLib(zipfile, "armeabi", nativeLibDir);
+            // ARM64-only: only try the primary ABI (arm64-v8a on API 29+)
+            findAndCopyNativeLib(zipfile, Build.CPU_ABI, nativeLibDir);
         } finally {
             Log.d(TAG, "Done! +" + (System.currentTimeMillis() - startTime) + "ms");
         }

@@ -15,7 +15,6 @@ import top.niunaijun.blackbox.core.system.ISystemService;
 import top.niunaijun.blackbox.core.system.user.BUserHandle;
 import top.niunaijun.blackbox.fake.provider.FileProvider;
 import top.niunaijun.blackbox.proxy.ProxyManifest;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * updated by alex5402 on 4/10/21.
@@ -46,9 +45,8 @@ public class BStorageManagerService extends IBStorageManagerService.Stub impleme
                 return null;
             for (StorageVolume storageVolume : storageVolumes) {
                 BRStorageVolume.get(storageVolume)._set_mPath(BEnvironment.getExternalUserDir(userId));
-                if (BuildCompat.isPie()) {
-                    BRStorageVolume.get(storageVolume)._set_mInternalPath(BEnvironment.getExternalUserDir(userId));
-                }
+                // Always set mInternalPath on API 29+ (Pie+ feature)
+                BRStorageVolume.get(storageVolume)._set_mInternalPath(BEnvironment.getExternalUserDir(userId));
             }
             return storageVolumes;
         } catch (Exception e) {

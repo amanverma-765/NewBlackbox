@@ -525,15 +525,10 @@ public class BlackBoxCore extends ClientConfiguration {
                         }
                     }
                     
-                    if (BuildCompat.isOreo()) {
-                        getContext().startForegroundService(intent);
-                        Slog.d(TAG, "Started DaemonService as foreground service");
-                        serviceStarted = true;
-                    } else {
-                        getContext().startService(intent);
-                        Slog.d(TAG, "Started DaemonService as regular service");
-                        serviceStarted = true;
-                    }
+                    // Always use foreground service on API 29+
+                    getContext().startForegroundService(intent);
+                    Slog.d(TAG, "Started DaemonService as foreground service");
+                    serviceStarted = true;
                     
                 } catch (SecurityException e) {
                     if (e.getMessage() != null && e.getMessage().contains("MissingForegroundServiceTypeException")) {
@@ -623,11 +618,8 @@ public class BlackBoxCore extends ClientConfiguration {
                 public void run() {
                     try {
                         Slog.d(TAG, "Executing delayed retry for DaemonService");
-                        if (BuildCompat.isOreo()) {
-                            getContext().startForegroundService(intent);
-                        } else {
-                            getContext().startService(intent);
-                        }
+                        // Always use foreground service on API 29+
+                        getContext().startForegroundService(intent);
                         Slog.d(TAG, "Delayed retry successful");
                     } catch (Exception e) {
                         Slog.e(TAG, "Delayed retry failed: " + e.getMessage());
@@ -943,15 +935,10 @@ public class BlackBoxCore extends ClientConfiguration {
                                 }
                             }
                             
-                            if (BuildCompat.isOreo()) {
-                                getContext().startForegroundService(intent);
-                                Slog.d(TAG, "Started DaemonService as foreground service in server process");
-                                serviceStarted = true;
-                            } else {
-                                getContext().startService(intent);
-                                Slog.d(TAG, "Started DaemonService as regular service in server process");
-                                serviceStarted = true;
-                            }
+                            // Always use foreground service on API 29+
+                            getContext().startForegroundService(intent);
+                            Slog.d(TAG, "Started DaemonService as foreground service in server process");
+                            serviceStarted = true;
                             
                         } catch (SecurityException e) {
                             if (e.getMessage() != null && e.getMessage().contains("MissingForegroundServiceTypeException")) {
@@ -1300,42 +1287,28 @@ public class BlackBoxCore extends ClientConfiguration {
 
     private void startLogcat() {
         new Thread(() -> {
-            File logFile = null;
             Context context = getContext();
             String fileName = context.getPackageName() + "_logcat.txt";
-            boolean useMediaStore = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
             try {
-                if (useMediaStore) {
-                    // Use MediaStore for Android 10+
-                    android.content.ContentValues values = new android.content.ContentValues();
-                    values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
-                    values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "text/plain");
-                    values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/logs");
-                    android.net.Uri uri = context.getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                    if (uri != null) {
-                        try (java.io.OutputStream out = context.getContentResolver().openOutputStream(uri)) {
-                            // Clear logcat and dump to output stream
-                            ShellUtils.execCommand("logcat -c", false);
-                            java.lang.Process process = Runtime.getRuntime().exec("logcat");
-                            try (java.io.InputStream in = process.getInputStream()) {
-                                byte[] buffer = new byte[4096];
-                                int len;
-                                while ((len = in.read(buffer)) != -1) {
-                                    out.write(buffer, 0, len);
-                                }
+                // Use MediaStore for Android 10+ (always available on API 29+)
+                android.content.ContentValues values = new android.content.ContentValues();
+                values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
+                values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "text/plain");
+                values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/logs");
+                android.net.Uri uri = context.getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                if (uri != null) {
+                    try (java.io.OutputStream out = context.getContentResolver().openOutputStream(uri)) {
+                        // Clear logcat and dump to output stream
+                        ShellUtils.execCommand("logcat -c", false);
+                        java.lang.Process process = Runtime.getRuntime().exec("logcat");
+                        try (java.io.InputStream in = process.getInputStream()) {
+                            byte[] buffer = new byte[4096];
+                            int len;
+                            while ((len = in.read(buffer)) != -1) {
+                                out.write(buffer, 0, len);
                             }
                         }
                     }
-                } else {
-                    // Use app-private external files dir for Android 9 and below
-                    File docuentsdir = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "logs");
-                    if (!docuentsdir.exists()) {
-                        docuentsdir.mkdirs();
-                    }
-                    logFile = new File(docuentsdir, fileName);
-                    FileUtils.deleteDir(logFile);
-                    ShellUtils.execCommand("logcat -c", false);
-                    ShellUtils.execCommand("logcat -f " + logFile.getAbsolutePath(), false);
                 }
             } catch (Exception e) {
                 Slog.e(TAG, "Failed to save logcat: " + e.getMessage());
@@ -1348,22 +1321,20 @@ public class BlackBoxCore extends ClientConfiguration {
         int pid = Process.myPid();
         String processName = null;
         
-        // Try modern approach first (API 28+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            try {
-                ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.RunningAppProcessInfo> processes = am.getRunningAppProcesses();
-                if (processes != null) {
-                    for (ActivityManager.RunningAppProcessInfo info : processes) {
-                        if (info.pid == pid) {
-                            processName = info.processName;
-                            break;
-                        }
+        // Get process name using ActivityManager (API 28+, always available on API 29+)
+        try {
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningAppProcessInfo> processes = am.getRunningAppProcesses();
+            if (processes != null) {
+                for (ActivityManager.RunningAppProcessInfo info : processes) {
+                    if (info.pid == pid) {
+                        processName = info.processName;
+                        break;
                     }
                 }
-            } catch (Exception e) {
-                Slog.w(TAG, "Failed to get process name using modern API", e);
             }
+        } catch (Exception e) {
+            Slog.w(TAG, "Failed to get process name using ActivityManager", e);
         }
         
         // Fallback to deprecated method if modern approach fails
@@ -1391,26 +1362,22 @@ public class BlackBoxCore extends ClientConfiguration {
     }
 
     public static boolean is64Bit() {
-        if (BuildCompat.isM()) {
-            return Process.is64Bit();
-        } else {
-            return Build.CPU_ABI.equals("arm64-v8a");
-        }
+        // Always use Process.is64Bit() on API 29+ (available since API 23)
+        return Process.is64Bit();
     }
 
     private void initNotificationManager() {
         NotificationManager nm = (NotificationManager) BlackBoxCore.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
         String CHANNEL_ONE_ID = BlackBoxCore.getContext().getPackageName() + ".blackbox_core";
         String CHANNEL_ONE_NAME = "blackbox_core";
-        if (BuildCompat.isOreo()) {
-            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ONE_ID,
-                    CHANNEL_ONE_NAME, NotificationManager.IMPORTANCE_HIGH);
-            notificationChannel.enableLights(true);
-            notificationChannel.setLightColor(Color.RED);
-            notificationChannel.setShowBadge(true);
-            notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            nm.createNotificationChannel(notificationChannel);
-        }
+        // Always create notification channel on API 29+ (required since API 26)
+        NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ONE_ID,
+                CHANNEL_ONE_NAME, NotificationManager.IMPORTANCE_HIGH);
+        notificationChannel.enableLights(true);
+        notificationChannel.setLightColor(Color.RED);
+        notificationChannel.setShowBadge(true);
+        notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        nm.createNotificationChannel(notificationChannel);
     }
 
     public void closeCodeInit(){
@@ -1625,11 +1592,8 @@ public class BlackBoxCore extends ClientConfiguration {
                         Intent vpnIntent = new Intent(getContext(), top.niunaijun.blackbox.proxy.ProxyVpnService.class);
                         vpnIntent.setAction("android.net.VpnService");
                         
-                        if (BuildCompat.isOreo()) {
-                            getContext().startForegroundService(vpnIntent);
-                        } else {
-                            getContext().startService(vpnIntent);
-                        }
+                        // Always use foreground service on API 29+
+                        getContext().startForegroundService(vpnIntent);
                         
                         Slog.d(TAG, "VPN service started successfully for internet access");
                     } catch (Exception e) {
@@ -1883,13 +1847,10 @@ public class BlackBoxCore extends ClientConfiguration {
                             intent.setClass(getContext(), DaemonService.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             
-                            if (BuildCompat.isOreo()) {
-                                getContext().startForegroundService(intent);
-                            } else {
-                                getContext().startService(intent);
-                            }
+                            // Always use foreground service on API 29+
+                            getContext().startForegroundService(intent);
                         }
-                        
+
                     } catch (Exception e) {
                         Slog.w(TAG, "Server process recovery execution failed: " + e.getMessage());
                     }
@@ -1972,11 +1933,8 @@ public class BlackBoxCore extends ClientConfiguration {
                             intent.setClass(getContext(), DaemonService.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             
-                            if (BuildCompat.isOreo()) {
-                                getContext().startForegroundService(intent);
-                            } else {
-                                getContext().startService(intent);
-                            }
+                            // Always use foreground service on API 29+
+                            getContext().startForegroundService(intent);
                             Slog.d(TAG, "Delayed server service start successful");
                         } catch (Exception e) {
                             Slog.e(TAG, "Delayed server service start failed: " + e.getMessage());
@@ -2005,11 +1963,8 @@ public class BlackBoxCore extends ClientConfiguration {
                 public void run() {
                     try {
                         Slog.d(TAG, "Executing delayed server retry for DaemonService");
-                        if (BuildCompat.isOreo()) {
-                            getContext().startForegroundService(intent);
-                        } else {
-                            getContext().startService(intent);
-                        }
+                        // Always use foreground service on API 29+
+                        getContext().startForegroundService(intent);
                         Slog.d(TAG, "Delayed server retry successful");
                     } catch (Exception e) {
                         Slog.e(TAG, "Delayed server retry failed: " + e.getMessage());

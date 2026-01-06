@@ -228,14 +228,9 @@ public class XiaomiPermissionManager {
         
         try {
             Intent intent = new Intent();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-                intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
-            } else {
-                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", context.getPackageName(), null);
-                intent.setData(uri);
-            }
+            // Use ACTION_APP_NOTIFICATION_SETTINGS (API 26+, always available on API 29+)
+            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
             Slog.d(TAG, "Opened notification settings");
@@ -245,13 +240,9 @@ public class XiaomiPermissionManager {
     }
     
     /**
-     * Create notification channels for the app
+     * Create notification channels for the app (API 26+, always available on API 29+)
      */
     private void createNotificationChannels() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
-        }
-        
         Context context = BlackBoxCore.getContext();
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         
@@ -295,13 +286,9 @@ public class XiaomiPermissionManager {
     }
     
     /**
-     * Disable battery optimization for the app
+     * Disable battery optimization for the app (API 23+, always available on API 29+)
      */
     private void disableBatteryOptimization() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return;
-        }
-        
         Context context = BlackBoxCore.getContext();
         
         try {

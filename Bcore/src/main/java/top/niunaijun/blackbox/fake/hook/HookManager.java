@@ -196,37 +196,24 @@ public class HookManager {
             if (BuildCompat.isR()) {
                 addInjector(new IPermissionManagerProxy());
             }
-            // 10.0
-            if (BuildCompat.isQ()) {
-                addInjector(new IActivityTaskManagerProxy());
-            }
-            // 9.0
-            if (BuildCompat.isPie()) {
-                addInjector(new ISystemUpdateProxy());
-            }
-            // 8.0
-            if (BuildCompat.isOreo()) {
-                addInjector(new IAutofillManagerProxy());
-                addInjector(new IDeviceIdentifiersPolicyProxy());
-                addInjector(new IStorageStatsManagerProxy());
-            }
-            // 7.1
-            if (BuildCompat.isN_MR1()) {
-                addInjector(new IShortcutManagerProxy());
-            }
-            // 7.0
-            if (BuildCompat.isN()) {
-                addInjector(new INetworkManagementServiceProxy());
-            }
-            // 6.0
-            if (BuildCompat.isM()) {
-                addInjector(new IFingerprintManagerProxy());
-                addInjector(new IGraphicsStatsProxy());
-            }
-            // 5.0
-            if (BuildCompat.isL()) {
-                addInjector(new IJobServiceProxy());
-            }
+            // All API levels below 29 are always available on API 29+
+            // API 29 (Q)
+            addInjector(new IActivityTaskManagerProxy());
+            // API 28 (Pie)
+            addInjector(new ISystemUpdateProxy());
+            // API 26 (Oreo)
+            addInjector(new IAutofillManagerProxy());
+            addInjector(new IDeviceIdentifiersPolicyProxy());
+            addInjector(new IStorageStatsManagerProxy());
+            // API 25 (N_MR1)
+            addInjector(new IShortcutManagerProxy());
+            // API 24 (N)
+            addInjector(new INetworkManagementServiceProxy());
+            // API 23 (M)
+            addInjector(new IFingerprintManagerProxy());
+            addInjector(new IGraphicsStatsProxy());
+            // API 21 (L)
+            addInjector(new IJobServiceProxy());
         }
         injectAll();
     }

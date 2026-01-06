@@ -28,11 +28,10 @@ public class DexCrashPrevention {
     // Cache for prevention attempts
     private static final Map<String, PreventionResult> sPreventionCache = new HashMap<>();
     
-    // Known problematic APK patterns
+    // Known problematic APK patterns (ARM64-only, removed armeabi-v7a)
     private static final String[] PROBLEMATIC_APK_PATTERNS = {
         "split_config.xhdpi.apk",
-        "split_config.arm64_v8a.apk",
-        "split_config.armeabi_v7a.apk"
+        "split_config.arm64_v8a.apk"
     };
     
     /**

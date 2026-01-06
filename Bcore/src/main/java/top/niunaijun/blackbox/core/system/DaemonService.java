@@ -35,11 +35,9 @@ public class DaemonService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "DaemonService onCreate");
-        
-        // Create notification channel for Android 8.0+
-        if (BuildCompat.isOreo()) {
-            createNotificationChannel();
-        }
+
+        // Create notification channel (required for Android 8.0+, always runs on Android 10+)
+        createNotificationChannel();
     }
 
     @Override
@@ -50,15 +48,13 @@ public class DaemonService extends Service {
             // Start the inner service
             Intent innerIntent = new Intent(this, DaemonInnerService.class);
             startService(innerIntent);
-            
-            // Start foreground service for Android 8.0+
-            if (BuildCompat.isOreo()) {
-                if (!startForegroundService()) {
-                    Log.w(TAG, "Failed to start foreground service, falling back to regular service");
-                    return START_STICKY;
-                }
+
+            // Start foreground service (required for Android 8.0+, always runs on Android 10+)
+            if (!startForegroundService()) {
+                Log.w(TAG, "Failed to start foreground service, falling back to regular service");
+                return START_STICKY;
             }
-            
+
             Log.d(TAG, "DaemonService started successfully");
             return START_STICKY;
             
@@ -76,26 +72,24 @@ public class DaemonService extends Service {
     }
 
     /**
-     * Create notification channel for Android 8.0+
+     * Create notification channel (required for Android 8.0+, always runs on Android 10+)
      */
     private void createNotificationChannel() {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_LOW
-                );
-                channel.setDescription(CHANNEL_DESCRIPTION);
-                channel.setShowBadge(false);
-                channel.setSound(null, null);
-                channel.enableVibration(false);
-                
-                NotificationManager notificationManager = getSystemService(NotificationManager.class);
-                if (notificationManager != null) {
-                    notificationManager.createNotificationChannel(channel);
-                    Log.d(TAG, "Notification channel created successfully");
-                }
+            NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription(CHANNEL_DESCRIPTION);
+            channel.setShowBadge(false);
+            channel.setSound(null, null);
+            channel.enableVibration(false);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+                Log.d(TAG, "Notification channel created successfully");
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to create notification channel: " + e.getMessage(), e);

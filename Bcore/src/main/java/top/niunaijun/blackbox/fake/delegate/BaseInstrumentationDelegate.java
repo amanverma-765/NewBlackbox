@@ -57,83 +57,8 @@ public class BaseInstrumentationDelegate extends Instrumentation {
 
     @Override
     public void addResults(Bundle results) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mBaseInstrumentation.addResults(results);
-        } else {
-            // For Android versions below API 26 (Oreo), implement alternative result handling
-            try {
-                // Store results in a way that's compatible with older Android versions
-                if (results != null && !results.isEmpty()) {
-                    // Use sendStatus to send results (available on all Android versions)
-                    mBaseInstrumentation.sendStatus(0, results);
-                    
-                    // Alternative: Store results in a static map for later retrieval
-                    storeResultsForOlderVersions(results);
-                    
-                    // Alternative: Use SharedPreferences to store results
-                    storeResultsInPreferences(results);
-                }
-            } catch (Exception e) {
-                android.util.Log.w("BaseInstrumentationDelegate", "Failed to handle results on older Android version: " + e.getMessage());
-            }
-        }
-    }
-    
-    /**
-     * Store results in a static map for older Android versions
-     */
-    private void storeResultsForOlderVersions(Bundle results) {
-        try {
-            // Use reflection to access a static results storage
-            Class<?> resultsStorageClass = Class.forName("top.niunaijun.blackbox.utils.ResultsStorage");
-            java.lang.reflect.Method storeMethod = resultsStorageClass.getMethod("storeResults", String.class, Bundle.class);
-            
-            // Generate a unique key for these results
-            String resultKey = "results_" + System.currentTimeMillis() + "_" + android.os.Process.myPid();
-            storeMethod.invoke(null, resultKey, results);
-            
-            android.util.Log.d("BaseInstrumentationDelegate", "Stored results with key: " + resultKey);
-        } catch (Exception e) {
-            android.util.Log.w("BaseInstrumentationDelegate", "Failed to store results in static storage: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Store results in SharedPreferences for older Android versions
-     */
-    private void storeResultsInPreferences(Bundle results) {
-        try {
-            Context context = getContext();
-            if (context != null) {
-                android.content.SharedPreferences prefs = context.getSharedPreferences("instrumentation_results", Context.MODE_PRIVATE);
-                android.content.SharedPreferences.Editor editor = prefs.edit();
-                
-                // Convert Bundle to key-value pairs and store in preferences
-                for (String key : results.keySet()) {
-                    Object value = results.get(key);
-                    if (value instanceof String) {
-                        editor.putString(key, (String) value);
-                    } else if (value instanceof Integer) {
-                        editor.putInt(key, (Integer) value);
-                    } else if (value instanceof Boolean) {
-                        editor.putBoolean(key, (Boolean) value);
-                    } else if (value instanceof Long) {
-                        editor.putLong(key, (Long) value);
-                    } else if (value instanceof Float) {
-                        editor.putFloat(key, (Float) value);
-                    }
-                }
-                
-                // Add timestamp for result identification
-                editor.putLong("timestamp", System.currentTimeMillis());
-                editor.putInt("pid", android.os.Process.myPid());
-                
-                editor.apply();
-                android.util.Log.d("BaseInstrumentationDelegate", "Stored results in SharedPreferences");
-            }
-        } catch (Exception e) {
-            android.util.Log.w("BaseInstrumentationDelegate", "Failed to store results in preferences: " + e.getMessage());
-        }
+        // Android 10+ always supports addResults (API 26+)
+        mBaseInstrumentation.addResults(results);
     }
 
     @Override

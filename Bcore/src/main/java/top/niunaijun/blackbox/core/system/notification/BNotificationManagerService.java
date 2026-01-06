@@ -26,7 +26,6 @@ import top.niunaijun.blackbox.BlackBoxCore;
 import top.niunaijun.blackbox.core.system.BProcessManagerService;
 import top.niunaijun.blackbox.core.system.ISystemService;
 import top.niunaijun.blackbox.core.system.ProcessRecord;
-import top.niunaijun.blackbox.utils.compat.BuildCompat;
 
 /**
  * Created by BlackBox on 2022/3/15.
@@ -175,18 +174,17 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
             return;
         int notificationId = getNotificationId(userId, id, processByPid.getPackageName());
 
-        if (BuildCompat.isOreo()) {
-            NotificationOContext notificationOContext = BRNotificationO.get(notification);
-            // channel
-            if (notificationOContext._check_mChannelId() != null) {
-                String blackChannelId = getBlackChannelId(notificationOContext.mChannelId(), userId);
-                notificationOContext._set_mChannelId(blackChannelId);
-            }
-            // group
-            if (notificationOContext._check_mGroupKey() != null) {
-                String blackGroupId = getBlackGroupId(notificationOContext.mGroupKey(), userId);
-                notificationOContext._set_mGroupKey(blackGroupId);
-            }
+        // Always use Oreo+ notification API on API 29+
+        NotificationOContext notificationOContext = BRNotificationO.get(notification);
+        // channel
+        if (notificationOContext._check_mChannelId() != null) {
+            String blackChannelId = getBlackChannelId(notificationOContext.mChannelId(), userId);
+            notificationOContext._set_mChannelId(blackChannelId);
+        }
+        // group
+        if (notificationOContext._check_mGroupKey() != null) {
+            String blackGroupId = getBlackGroupId(notificationOContext.mGroupKey(), userId);
+            notificationOContext._set_mGroupKey(blackGroupId);
         }
         NotificationRecord notificationRecord = getNotificationRecord(processByPid.getPackageName(), userId);
         synchronized (notificationRecord.mIds) {
@@ -257,15 +255,14 @@ public class BNotificationManagerService extends IBNotificationManagerService.St
     @SuppressLint("NewApi")
     public void deletePackageNotification(String packageName, int userId) {
         NotificationRecord notificationRecord = getNotificationRecord(packageName, userId);
-        if (BuildCompat.isOreo()) {
-            for (NotificationChannelGroup value : notificationRecord.mNotificationChannelGroups.values()) {
-                String blackGroupId = getBlackGroupId(value.getId(), userId);
-                mRealNotificationManager.deleteNotificationChannelGroup(blackGroupId);
-            }
-            for (NotificationChannel value : notificationRecord.mNotificationChannels.values()) {
-                String blackChannelId = getBlackChannelId(value.getId(), userId);
-                mRealNotificationManager.deleteNotificationChannel(blackChannelId);
-            }
+        // Always use Oreo+ notification channels API on API 29+
+        for (NotificationChannelGroup value : notificationRecord.mNotificationChannelGroups.values()) {
+            String blackGroupId = getBlackGroupId(value.getId(), userId);
+            mRealNotificationManager.deleteNotificationChannelGroup(blackGroupId);
+        }
+        for (NotificationChannel value : notificationRecord.mNotificationChannels.values()) {
+            String blackChannelId = getBlackChannelId(value.getId(), userId);
+            mRealNotificationManager.deleteNotificationChannel(blackChannelId);
         }
         for (Integer id : notificationRecord.mIds) {
             mRealNotificationManager.cancel(id);

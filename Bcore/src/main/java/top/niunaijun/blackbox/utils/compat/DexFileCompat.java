@@ -33,12 +33,9 @@ public class DexFileCompat {
             Object object = Reflector.with(dexFile)
                     .field("mCookie")
                     .get();
-            if (BuildCompat.isM()) {
-                for (long l : (long[]) object) {
-                    cookies.add(l);
-                }
-            } else {
-                cookies.add((long) object);
+            // Always use M+ API on API 29+ (mCookie is long[] array)
+            for (long l : (long[]) object) {
+                cookies.add(l);
             }
         } catch (Exception e) {
             e.printStackTrace();

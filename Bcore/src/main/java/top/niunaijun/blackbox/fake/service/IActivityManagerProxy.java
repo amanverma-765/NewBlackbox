@@ -75,23 +75,15 @@ public class IActivityManagerProxy extends ClassInvocationStub {
 
     @Override
     protected Object getWho() {
-        Object iActivityManager = null;
-        if (BuildCompat.isOreo()) {
-            iActivityManager = BRActivityManagerOreo.get().IActivityManagerSingleton();
-        } else if (BuildCompat.isL()) {
-            iActivityManager = BRActivityManagerNative.get().gDefault();
-        }
+        // Always use Oreo+ API on API 29+
+        Object iActivityManager = BRActivityManagerOreo.get().IActivityManagerSingleton();
         return BRSingleton.get(iActivityManager).get();
     }
 
     @Override
     protected void inject(Object base, Object proxy) {
-        Object iActivityManager = null;
-        if (BuildCompat.isOreo()) {
-            iActivityManager = BRActivityManagerOreo.get().IActivityManagerSingleton();
-        } else if (BuildCompat.isL()) {
-            iActivityManager = BRActivityManagerNative.get().gDefault();
-        }
+        // Always use Oreo+ API on API 29+
+        Object iActivityManager = BRActivityManagerOreo.get().IActivityManagerSingleton();
         BRSingleton.get(iActivityManager)._set_mInstance(proxy);
     }
 
@@ -177,10 +169,8 @@ public class IActivityManagerProxy extends ClassInvocationStub {
         }
 
         public int getRequireForeground() {
-            if (BuildCompat.isOreo()) {
-                return 3;
-            }
-            return -1;
+            // Always return 3 on API 29+ (Oreo+ behavior)
+            return 3;
         }
     }
 
